@@ -24,3 +24,19 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+ruby {
+  display: inline-flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  vertical-align: bottom;
+  line-height: 1;
+}
+
+rt {
+  font-size: 0.55em;
+  line-height: 1.2;
+  text-align: center;
+  color: inherit;
+  opacity: 0.75;
+}
