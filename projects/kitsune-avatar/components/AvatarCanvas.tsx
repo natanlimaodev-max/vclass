@@ -43,6 +43,7 @@ const AvatarCanvas = forwardRef<AvatarCanvasHandle, Props>(
       renderer.setSize(mount.clientWidth, mount.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.domElement.style.display = "block";
       mount.appendChild(renderer.domElement);
 
       // Lighting

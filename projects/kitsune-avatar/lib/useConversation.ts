@@ -3,6 +3,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { ScenarioMeta } from "./scenarios";
 import type { Message } from "@/app/api/chat/route";
+import type { AvatarController } from "./AvatarController";
+import { detectEmotion } from "./emotion";
+import { playWithLipSync } from "./lipSync";
 
 export type ConversationStatus = "idle" | "loading" | "playing" | "recording" | "transcribing";
 
@@ -10,13 +13,19 @@ export interface ChatMessage extends Message {
   audioUrl?: string;
 }
 
-export function useConversation(scenario: ScenarioMeta) {
+export function useConversation(
+  scenario: ScenarioMeta,
+  controller: AvatarController | null = null
+) {
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ConversationStatus>("idle");
   const [pendingTranscript, setPendingTranscript] = useState("");
 
   const historyRef = useRef<ChatMessage[]>([]);
   useEffect(() => { historyRef.current = history; }, [history]);
+
+  const controllerRef = useRef<AvatarController | null>(controller);
+  useEffect(() => { controllerRef.current = controller; }, [controller]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -33,12 +42,19 @@ export function useConversation(scenario: ScenarioMeta) {
     if (!res.ok) { setStatus("idle"); return null; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    await new Promise<void>((resolve) => {
-      audio.onended = () => resolve();
-      audio.onerror = () => resolve();
-      audio.play();
-    });
+    const ctrl = controllerRef.current;
+
+    if (ctrl) {
+      await playWithLipSync(blob, (v) => ctrl.setExpression("aa", v));
+    } else {
+      const audio = new Audio(url);
+      await new Promise<void>((resolve) => {
+        audio.onended = () => resolve();
+        audio.onerror = () => resolve();
+        audio.play();
+      });
+    }
+
     setStatus("idle");
     return url;
   }, []);
@@ -78,7 +94,15 @@ export function useConversation(scenario: ScenarioMeta) {
 
     const data = await res.json();
 
-    // 1. Show text immediately
+    // Apply emotion before playing audio
+    const ctrl = controllerRef.current;
+    if (ctrl) {
+      const emotion = detectEmotion(data.content);
+      ctrl.resetExpressions();
+      ctrl.setExpression(emotion, 0.8);
+    }
+
+    // Show text immediately
     const assistantMsg: ChatMessage = { role: "assistant", content: data.content };
     const systemMsg = data.messages[0] as ChatMessage | undefined;
     const prior = historyRef.current.filter(m => m.role !== "system");
@@ -89,10 +113,15 @@ export function useConversation(scenario: ScenarioMeta) {
     ];
     setHistory(full);
 
-    // 2. Play audio after text is visible
+    // Play audio with lip sync
     const audioUrl = await playAudio(data.content);
 
-    // 3. Update message with audioUrl for replay
+    // Reset to relaxed after speaking
+    if (ctrl) {
+      ctrl.resetExpressions();
+      ctrl.setExpression("relaxed", 0.3);
+    }
+
     if (audioUrl) {
       setHistory(prev =>
         prev.map((m, i) => i === prev.length - 1 ? { ...m, audioUrl } : m)
@@ -139,9 +168,7 @@ export function useConversation(scenario: ScenarioMeta) {
         return;
       }
       const { transcript } = await res.json();
-      if (transcript?.trim()) {
-        setPendingTranscript(transcript.trim()); // put in input — user confirms
-      }
+      if (transcript?.trim()) setPendingTranscript(transcript.trim());
       setStatus("idle");
     };
     recorder.start();
@@ -157,7 +184,6 @@ export function useConversation(scenario: ScenarioMeta) {
   return {
     history, status, pendingTranscript,
     start, sendMessage, retry, replayAudio,
-    startRecording, stopRecording,
-    setPendingTranscript,
+    startRecording, stopRecording, setPendingTranscript,
   };
 }
