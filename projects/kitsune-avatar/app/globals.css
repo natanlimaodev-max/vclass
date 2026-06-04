@@ -26,17 +26,18 @@ body {
 }
 
 ruby {
-  display: inline-flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  vertical-align: bottom;
-  line-height: 1;
+  display: ruby;
+  ruby-position: over;
 }
 
 rt {
-  font-size: 0.55em;
-  line-height: 1.2;
+  display: ruby-text;
+  font-size: 0.6em;
   text-align: center;
-  color: inherit;
-  opacity: 0.75;
+  opacity: 0.7;
+}
+
+/* Extra line-height in chat bubbles to prevent furigana overlap */
+.chat-bubble {
+  line-height: 2.2;
 }

@@ -1,0 +1,27 @@
+Você é um professor de japonês. Explique a frase abaixo em português de forma direta e didática.
+
+REGRAS OBRIGATÓRIAS:
+- Comece IMEDIATAMENTE com "**1. Tradução**". Zero frases introdutórias.
+- Inclua TODAS as 6 seções abaixo, na ordem exata. Não pule nenhuma.
+- A seção 5 "Como responder" é OBRIGATÓRIA: dê exemplos reais de respostas.
+
+Frase: {sentence}
+
+**1. Tradução**
+Tradução natural e completa.
+
+**2. Vocabulário**
+Liste cada palavra/expressão importante com leitura (furigana nos kanjis) e significado.
+
+**3. Gramática**
+Explique os pontos gramaticais usados (estruturas, conjugações, partículas).
+
+**4. Nível de formalidade**
+Indique o nível de polidez (casual / 丁寧語 / 敬語) e por quê.
+
+**5. Como responder**
+Dê exatamente 3 exemplos de respostas naturais em japonês adequadas ao nível N5.
+Para cada exemplo mostre: frase em japonês (com furigana nos kanjis) + tradução em português.
+
+**6. Observações extras**
+Nuances culturais, formas alternativas ou dicas relevantes (se houver). Se não houver, escreva "—".

@@ -1,30 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ConversationStatus } from "@/lib/useConversation";
 
 interface Props {
   status: ConversationStatus;
+  pendingTranscript: string;
   onSendText: (text: string) => void;
   onStartRecording: () => void;
   onStopRecording: () => void;
-  onRetry: () => void;
+  onTranscriptChange: (v: string) => void;
 }
 
 export default function InputBar({
-  status,
-  onSendText,
-  onStartRecording,
-  onStopRecording,
-  onRetry,
+  status, pendingTranscript,
+  onSendText, onStartRecording, onStopRecording, onTranscriptChange,
 }: Props) {
   const [text, setText] = useState("");
-  const busy = status === "loading" || status === "playing";
+  const busy = status === "loading" || status === "playing" || status === "transcribing";
+
+  useEffect(() => {
+    if (pendingTranscript) setText(pendingTranscript);
+  }, [pendingTranscript]);
 
   const handleSubmit = () => {
     if (!text.trim() || busy) return;
     onSendText(text.trim());
     setText("");
+    onTranscriptChange("");
   };
 
   return (
@@ -33,7 +36,7 @@ export default function InputBar({
         <input
           type="text"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); onTranscriptChange(e.target.value); }}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="Type your response..."
           disabled={busy}
@@ -48,38 +51,26 @@ export default function InputBar({
         </button>
       </div>
 
-      <div className="flex gap-2">
-        {status === "recording" ? (
-          <button
-            onClick={onStopRecording}
-            className="flex-1 py-2 rounded-xl bg-red-600 text-white text-sm font-medium animate-pulse"
-          >
-            ⏹ Stop Recording
-          </button>
-        ) : (
-          <button
-            onClick={onStartRecording}
-            disabled={busy}
-            className="flex-1 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-medium hover:bg-zinc-700 disabled:opacity-40 transition-colors"
-          >
-            🎤 Speak
-          </button>
-        )}
+      {status === "recording" ? (
         <button
-          onClick={onRetry}
-          disabled={busy || status === "recording"}
-          className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-400 text-sm hover:bg-zinc-700 disabled:opacity-40 transition-colors"
+          onClick={onStopRecording}
+          className="w-full py-2 rounded-xl bg-red-600 text-white text-sm font-medium animate-pulse"
         >
-          Retry
+          ⏹ Stop Recording
         </button>
-      </div>
+      ) : (
+        <button
+          onClick={onStartRecording}
+          disabled={busy}
+          className="w-full py-2 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-medium hover:bg-zinc-700 disabled:opacity-40 transition-colors"
+        >
+          🎤 Speak
+        </button>
+      )}
 
-      {status === "loading" && (
-        <p className="text-xs text-zinc-500 text-center animate-pulse">thinking...</p>
-      )}
-      {status === "playing" && (
-        <p className="text-xs text-zinc-500 text-center animate-pulse">speaking...</p>
-      )}
+      {status === "loading"      && <p className="text-xs text-zinc-500 text-center animate-pulse">thinking...</p>}
+      {status === "playing"      && <p className="text-xs text-zinc-500 text-center animate-pulse">speaking...</p>}
+      {status === "transcribing" && <p className="text-xs text-zinc-500 text-center animate-pulse">transcribing...</p>}
     </div>
   );
 }
