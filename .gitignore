@@ -25,10 +25,13 @@ node_modules/
 out/
 .turbo/
 
-# ── VRM models (binary, large) ───────────────────────
+# ── 3D models / Unity assets ─────────────────────────
 *.vrm
 *.glb
 *.gltf
+*.fbx
+*.meta
+public/models/
 
 # ── OS ───────────────────────────────────────────────
 .DS_Store
