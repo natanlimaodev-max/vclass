@@ -1,0 +1,7 @@
+openai>=1.30.0
+elevenlabs>=1.2.0
+sounddevice>=0.4.6
+soundfile>=0.12.1
+rich>=13.7.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
