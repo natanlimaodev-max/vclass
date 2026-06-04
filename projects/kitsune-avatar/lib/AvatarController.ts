@@ -23,6 +23,17 @@ export class AvatarController {
 
   constructor(vrm: VRM) {
     this.vrm = vrm;
+    this.applyRestPose();
+  }
+
+  private applyRestPose() {
+    // Normalized bone space: left arm points +X, right arm points -X
+    // Positive Z rotation = counterclockwise from front = arm goes UP for left arm
+    // So to lower arms: left = -Z, right = +Z
+    this.setBoneRotation(VRMHumanBoneName.LeftUpperArm,  { z:  1.2 });
+    this.setBoneRotation(VRMHumanBoneName.RightUpperArm, { z: -1.2 });
+    this.setBoneRotation(VRMHumanBoneName.LeftLowerArm,  { z:  0.2 });
+    this.setBoneRotation(VRMHumanBoneName.RightLowerArm, { z: -0.2 });
   }
 
   setExpression(name: ExpressionName, value: number) {
@@ -43,7 +54,7 @@ export class AvatarController {
     boneName: VRMHumanBoneName,
     rotation: { x?: number; y?: number; z?: number }
   ) {
-    const bone = this.vrm.humanoid?.getRawBoneNode(boneName);
+    const bone = this.vrm.humanoid?.getNormalizedBoneNode(boneName);
     if (!bone) return;
     if (rotation.x !== undefined) bone.rotation.x = rotation.x;
     if (rotation.y !== undefined) bone.rotation.y = rotation.y;

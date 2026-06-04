@@ -29,11 +29,6 @@ export default function Home() {
     <main className="flex h-screen bg-zinc-950 text-white">
       <div className="flex-1 relative">
         <AvatarCanvas ref={avatarRef} />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-zinc-700 text-sm select-none">
-            place kitsune.vrm in /public/models/
-          </p>
-        </div>
       </div>
 
       <aside className="w-56 flex flex-col gap-3 p-6 border-l border-zinc-800">

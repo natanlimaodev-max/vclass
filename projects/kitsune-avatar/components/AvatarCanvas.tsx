@@ -14,7 +14,7 @@ interface Props {
 }
 
 const AvatarCanvas = forwardRef<AvatarCanvasHandle, Props>(
-  ({ modelUrl = "/models/kitsune.vrm" }, ref) => {
+  ({ modelUrl = "/models/Arisa/_VRM/Arisa.vrm" }, ref) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const controllerRef = useRef<AvatarController | null>(null);
 
@@ -31,13 +31,13 @@ const AvatarCanvas = forwardRef<AvatarCanvasHandle, Props>(
       // Scene
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
-        30,
+        15,
         mount.clientWidth / mount.clientHeight,
         0.1,
         20
       );
-      camera.position.set(0, 1.4, 3);
-      camera.lookAt(0, 1.2, 0);
+      camera.position.set(0, 1.28, 1.7);
+      camera.lookAt(0, 1.45, 0);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(mount.clientWidth, mount.clientHeight);
