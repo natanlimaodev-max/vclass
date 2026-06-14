@@ -58,7 +58,7 @@ export default function ScenarioSelector({ onSelect }: Props) {
     <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/90 backdrop-blur-sm">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 w-80 flex flex-col gap-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Kitsune Avatar</h1>
+          <h1 className="text-xl font-semibold text-white">VClass</h1>
           {breadcrumb ? (
             <button
               onClick={() => {

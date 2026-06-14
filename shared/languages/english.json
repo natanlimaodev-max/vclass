@@ -5,37 +5,37 @@
     {
       "code": "A1",
       "label": "A1 — Beginner",
-      "description": "Basic survival phrases",
+      "description": "Understand and use familiar everyday expressions and very basic phrases. Introduce themselves and others. Ask and answer questions about personal details such as where they live, people they know, and things they have.",
       "grammar_notes": "Use only simple present tense (am, is, are, have, like, want). Basic vocabulary only. Maximum 8 words per sentence. No idioms. No contractions in questions."
     },
     {
       "code": "A2",
       "label": "A2 — Elementary",
-      "description": "Elementary daily conversation",
+      "description": "Understand sentences and frequently used expressions related to areas of most immediate relevance (personal and family information, shopping, local geography, employment). Communicate in simple and routine tasks requiring a direct exchange of information on familiar matters.",
       "grammar_notes": "Use simple present and simple past. Can/could for ability and requests. Basic connectors: and, but, because, so. Common everyday vocabulary. Sentences up to 15 words."
     },
     {
       "code": "B1",
       "label": "B1 — Intermediate",
-      "description": "Intermediate conversation",
+      "description": "Understand the main points of clear standard input on familiar matters regularly encountered in work, school, and leisure. Deal with most situations likely to arise while travelling. Produce simple connected text on familiar or personal topics.",
       "grammar_notes": "Use present, past, present perfect, going to/will. Relative clauses (who, which, that). Connectors: although, however, in order to, because of. Express opinions and make suggestions naturally."
     },
     {
       "code": "B2",
       "label": "B2 — Upper Intermediate",
-      "description": "Upper intermediate conversation",
+      "description": "Understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field. Interact with fluency and spontaneity that makes regular interaction with native speakers possible without strain for either party.",
       "grammar_notes": "Full range of common tenses. First and second conditionals. Passive voice. Wide vocabulary. Complex sentences with multiple clauses. Phrasal verbs in context."
     },
     {
       "code": "C1",
       "label": "C1 — Advanced",
-      "description": "Advanced proficiency",
+      "description": "Understand a wide range of demanding, longer texts and recognise implicit meaning. Express fluently and spontaneously without much obvious searching for expressions. Use language flexibly and effectively for social, academic, and professional purposes.",
       "grammar_notes": "Full grammar range including third conditional, subjunctive, and inversion. Idiomatic expressions, collocations, and sophisticated vocabulary. Natural native-like sentence rhythm."
     },
     {
       "code": "C2",
       "label": "C2 — Mastery",
-      "description": "Near-native proficiency",
+      "description": "Understand with ease virtually everything heard or read. Summarise information from different spoken and written sources, reconstructing arguments and accounts in a coherent presentation. Express spontaneously, very fluently and precisely, differentiating finer shades of meaning even in complex situations.",
       "grammar_notes": "All grammar structures including rare and literary forms. Rich vocabulary, cultural references, subtle humour, and nuance. Speak exactly as a well-educated native speaker would."
     }
   ]
