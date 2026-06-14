@@ -6,42 +6,31 @@
       "code": "N5",
       "label": "N5 — Beginner",
       "description": "Basic survival phrases",
-      "grammar_notes": "Simple ます/です, SOV, JLPT N5 vocabulary",
-      "types": {
-        "roleplay": [
-          { "id": "first_meeting",     "label": "First Meeting" },
-          { "id": "haircut",           "label": "Haircut" },
-          { "id": "arubaito_interview","label": "Arubaito Interview" }
-        ]
-      }
+      "grammar_notes": "Use only ます/です polite form. JLPT N5 vocabulary only. SOV sentence structure. Simple present and past tense only. Short sentences (max 10 words). No て-form chains, no conditionals, no complex patterns."
     },
     {
       "code": "N4",
       "label": "N4 — Elementary",
       "description": "Elementary daily conversation",
-      "grammar_notes": "て-form, conditionals, basic compound sentences",
-      "types": {}
+      "grammar_notes": "Use ます/です polite form. JLPT N4 vocabulary. て-form for connecting actions. Simple conditionals (〜たら、〜と). Basic compound sentences. Expressions of desire (〜たい、〜てほしい)."
     },
     {
       "code": "N3",
       "label": "N3 — Intermediate",
-      "description": "Intermediate",
-      "grammar_notes": "Passive/causative, wider vocabulary, news topics",
-      "types": {}
+      "description": "Intermediate conversation",
+      "grammar_notes": "Use both polite and casual registers as appropriate. JLPT N3 vocabulary. Passive voice (〜られる). Causative (〜させる). Relative clauses. Conjunctions like のに、ので、から、ながら. Wider range of topics including opinions and feelings."
     },
     {
       "code": "N2",
       "label": "N2 — Upper Intermediate",
-      "description": "Upper intermediate",
-      "grammar_notes": "Complex grammar, abstract topics, near-newspaper level",
-      "types": {}
+      "description": "Upper intermediate conversation",
+      "grammar_notes": "JLPT N2 vocabulary and grammar. Honorific and humble forms (keigo: 〜いただく、〜させていただく). Complex grammar patterns (〜にもかかわらず、〜に関して). Abstract and nuanced topics. Natural flow between polite and casual speech."
     },
     {
       "code": "N1",
       "label": "N1 — Advanced",
       "description": "Near-native proficiency",
-      "grammar_notes": "Full complexity, idiomatic expressions, literature",
-      "types": {}
+      "grammar_notes": "Full JLPT N1 grammar and vocabulary. Rich keigo (敬語). Idiomatic expressions, four-character idioms (四字熟語), literary forms. Complex sentence structures. Speak as a well-educated native Japanese speaker would in formal and informal contexts."
     }
   ]
 }

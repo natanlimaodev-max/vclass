@@ -29,28 +29,21 @@ export const LANGUAGES: Language[] = [
   {
     id: "japanese",
     label: "Japanese",
-    levels: [
-      {
-        id: "N5",
-        label: "N5 — Beginner",
-        description: "Basic survival phrases",
-        types: [
-          {
-            id: "roleplay",
-            label: "Roleplay",
-            scenarios: [
-              { language: "japanese", level: "N5", type: "roleplay", scenario: "first_meeting",     label: "First Meeting" },
-              { language: "japanese", level: "N5", type: "roleplay", scenario: "haircut",            label: "Haircut" },
-              { language: "japanese", level: "N5", type: "roleplay", scenario: "arubaito_interview", label: "Arubaito Interview" },
-            ],
-          },
-        ],
-      },
-      { id: "N4", label: "N4 — Elementary",         description: "Elementary daily conversation", types: [] },
-      { id: "N3", label: "N3 — Intermediate",        description: "Intermediate",                  types: [] },
-      { id: "N2", label: "N2 — Upper Intermediate",  description: "Upper intermediate",            types: [] },
-      { id: "N1", label: "N1 — Advanced",            description: "Near-native proficiency",       types: [] },
-    ],
+    levels: ["N5", "N4", "N3", "N2", "N1"].map((lvl, i) => {
+      const meta = [
+        { label: "N5 — Beginner",          description: "Basic survival phrases" },
+        { label: "N4 — Elementary",         description: "Elementary daily conversation" },
+        { label: "N3 — Intermediate",       description: "Intermediate conversation" },
+        { label: "N2 — Upper Intermediate", description: "Upper intermediate conversation" },
+        { label: "N1 — Advanced",           description: "Near-native proficiency" },
+      ][i];
+      const roleplay = [
+        { language: "japanese", level: lvl, type: "roleplay", scenario: "first_meeting",     label: "First Meeting" },
+        { language: "japanese", level: lvl, type: "roleplay", scenario: "haircut",            label: "Haircut" },
+        { language: "japanese", level: lvl, type: "roleplay", scenario: "arubaito_interview", label: "Arubaito Interview" },
+      ];
+      return { id: lvl, label: meta.label, description: meta.description, types: [{ id: "roleplay", label: "Roleplay", scenarios: roleplay }] };
+    }),
   },
   {
     id: "english",
