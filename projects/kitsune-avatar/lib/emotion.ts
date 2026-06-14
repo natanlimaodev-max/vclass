@@ -1,6 +1,4 @@
-import type { ExpressionName } from "./AvatarController";
-
-const RULES: Array<{ keywords: string[]; expression: ExpressionName }> = [
+const RULES: Array<{ keywords: string[]; expression: string }> = [
   {
     expression: "sad",
     keywords: ["悲し", "ごめん", "申し訳", "残念", "つらい", "難し"],
@@ -19,7 +17,7 @@ const RULES: Array<{ keywords: string[]; expression: ExpressionName }> = [
   },
 ];
 
-export function detectEmotion(text: string): ExpressionName {
+export function detectEmotion(text: string): string {
   for (const { keywords, expression } of RULES) {
     if (keywords.some((k) => text.includes(k))) return expression;
   }

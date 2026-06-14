@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessage } from "@/lib/useConversation";
+import type { ChatMessage, GrammarCheck } from "@/lib/useConversation";
 import { renderFurigana } from "@/lib/furigana";
 import ExplainModal from "./ExplainModal";
 
@@ -12,7 +12,7 @@ interface Props {
 
 export default function ChatPanel({ history, onReplay }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [explaining, setExplaining] = useState<string | null>(null);
+  const [explaining, setExplaining] = useState<{ sentence: string; content?: string } | null>(null);
   const visible = history.filter((m) => m.role !== "system");
 
   useEffect(() => {
@@ -49,7 +49,10 @@ export default function ChatPanel({ history, onReplay }: Props) {
                     ▶ replay
                   </button>
                   <button
-                    onClick={() => setExplaining(stripFurigana(msg.content))}
+                    onClick={() => setExplaining({
+                      sentence: stripFurigana(msg.content),
+                      content: msg.explainContent ?? undefined,
+                    })}
                     className="text-xs text-zinc-500 hover:text-violet-400 transition-colors"
                   >
                     ? explain
@@ -63,7 +66,11 @@ export default function ChatPanel({ history, onReplay }: Props) {
       </div>
 
       {explaining && (
-        <ExplainModal sentence={explaining} onClose={() => setExplaining(null)} />
+        <ExplainModal
+          sentence={explaining.sentence}
+          content={explaining.content}
+          onClose={() => setExplaining(null)}
+        />
       )}
     </>
   );

@@ -5,6 +5,7 @@ import AvatarCanvas, { AvatarCanvasHandle } from "@/components/AvatarCanvas";
 import ScenarioSelector from "@/components/ScenarioSelector";
 import ChatPanel from "@/components/ChatPanel";
 import InputBar from "@/components/InputBar";
+import ExportDialog from "@/components/ExportDialog";
 import { useConversation } from "@/lib/useConversation";
 import type { ScenarioMeta } from "@/lib/scenarios";
 import type { AvatarController } from "@/lib/AvatarController";
@@ -22,10 +23,12 @@ function ConversationPanel({
   onExit: () => void;
 }) {
   const {
-    history, status, pendingTranscript,
-    start, sendMessage, replayAudio,
+    history, status, pendingTranscript, grammarFlagged,
+    start, sendMessage, sendFlagged, clearGrammarFlagged, replayAudio,
     startRecording, stopRecording, setPendingTranscript,
   } = useConversation(scenario, controller);
+
+  const [showExport, setShowExport] = useState(false);
 
   useEffect(() => { start(); }, []); // eslint-disable-line
 
@@ -36,9 +39,17 @@ function ConversationPanel({
           <p className="text-sm font-medium text-white">{scenario.label}</p>
           <p className="text-xs text-zinc-500">{scenario.language} · {scenario.level}</p>
         </div>
-        <button onClick={onExit} className="text-xs text-zinc-500 hover:text-zinc-300 ml-4">
-          Exit
-        </button>
+        <div className="flex items-center gap-3 ml-4">
+          <button
+            onClick={() => setShowExport(true)}
+            className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+          >
+            End
+          </button>
+          <button onClick={onExit} className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+            Exit
+          </button>
+        </div>
       </div>
 
       <ChatPanel history={history} onReplay={replayAudio} />
@@ -46,11 +57,23 @@ function ConversationPanel({
       <InputBar
         status={status}
         pendingTranscript={pendingTranscript}
+        grammarFlagged={grammarFlagged}
         onSendText={sendMessage}
+        onResend={sendFlagged}
+        onClearFlag={clearGrammarFlagged}
         onStartRecording={startRecording}
         onStopRecording={stopRecording}
         onTranscriptChange={setPendingTranscript}
       />
+
+      {showExport && (
+        <ExportDialog
+          history={history}
+          scenario={scenario}
+          onClose={() => setShowExport(false)}
+          onExit={() => { setShowExport(false); onExit(); }}
+        />
+      )}
     </aside>
   );
 }

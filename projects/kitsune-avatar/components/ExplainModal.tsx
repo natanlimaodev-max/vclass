@@ -6,13 +6,16 @@ import ReactMarkdown from "react-markdown";
 interface Props {
   sentence: string;
   onClose: () => void;
+  /** If provided, skips the API fetch and shows this content directly. */
+  content?: string;
 }
 
-export default function ExplainModal({ sentence, onClose }: Props) {
-  const [explanation, setExplanation] = useState("");
-  const [loading, setLoading] = useState(true);
+export default function ExplainModal({ sentence, onClose, content: preloaded }: Props) {
+  const [explanation, setExplanation] = useState(preloaded ?? "");
+  const [loading, setLoading] = useState(!preloaded);
 
   useEffect(() => {
+    if (preloaded) return;
     fetch("/api/explain", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,7 +25,7 @@ export default function ExplainModal({ sentence, onClose }: Props) {
       .then((d) => setExplanation(d.explanation ?? d.error ?? "Error"))
       .catch(() => setExplanation("Failed to load explanation."))
       .finally(() => setLoading(false));
-  }, [sentence]);
+  }, [sentence, preloaded]);
 
   return (
     <div

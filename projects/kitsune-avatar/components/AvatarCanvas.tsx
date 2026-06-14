@@ -76,18 +76,18 @@ const AvatarCanvas = forwardRef<AvatarCanvasHandle, Props>(
       };
       animate();
 
-      // Resize
+      // Resize — observe the mount div directly so panel drags trigger it too
       const onResize = () => {
-        if (!mount) return;
         camera.aspect = mount.clientWidth / mount.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(mount.clientWidth, mount.clientHeight);
       };
-      window.addEventListener("resize", onResize);
+      const ro = new ResizeObserver(onResize);
+      ro.observe(mount);
 
       return () => {
         cancelAnimationFrame(animFrameId);
-        window.removeEventListener("resize", onResize);
+        ro.disconnect();
         renderer.dispose();
         mount.removeChild(renderer.domElement);
       };
