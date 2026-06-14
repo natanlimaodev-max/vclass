@@ -1,0 +1,42 @@
+{
+  "code": "english",
+  "name": "English",
+  "levels": [
+    {
+      "code": "A1",
+      "label": "A1 — Beginner",
+      "description": "Basic survival phrases",
+      "grammar_notes": "Use only simple present tense (am, is, are, have, like, want). Basic vocabulary only. Maximum 8 words per sentence. No idioms. No contractions in questions."
+    },
+    {
+      "code": "A2",
+      "label": "A2 — Elementary",
+      "description": "Elementary daily conversation",
+      "grammar_notes": "Use simple present and simple past. Can/could for ability and requests. Basic connectors: and, but, because, so. Common everyday vocabulary. Sentences up to 15 words."
+    },
+    {
+      "code": "B1",
+      "label": "B1 — Intermediate",
+      "description": "Intermediate conversation",
+      "grammar_notes": "Use present, past, present perfect, going to/will. Relative clauses (who, which, that). Connectors: although, however, in order to, because of. Express opinions and make suggestions naturally."
+    },
+    {
+      "code": "B2",
+      "label": "B2 — Upper Intermediate",
+      "description": "Upper intermediate conversation",
+      "grammar_notes": "Full range of common tenses. First and second conditionals. Passive voice. Wide vocabulary. Complex sentences with multiple clauses. Phrasal verbs in context."
+    },
+    {
+      "code": "C1",
+      "label": "C1 — Advanced",
+      "description": "Advanced proficiency",
+      "grammar_notes": "Full grammar range including third conditional, subjunctive, and inversion. Idiomatic expressions, collocations, and sophisticated vocabulary. Natural native-like sentence rhythm."
+    },
+    {
+      "code": "C2",
+      "label": "C2 — Mastery",
+      "description": "Near-native proficiency",
+      "grammar_notes": "All grammar structures including rare and literary forms. Rich vocabulary, cultural references, subtle humour, and nuance. Speak exactly as a well-educated native speaker would."
+    }
+  ]
+}

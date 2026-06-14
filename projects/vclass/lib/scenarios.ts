@@ -55,28 +55,21 @@ export const LANGUAGES: Language[] = [
   {
     id: "english",
     label: "English",
-    levels: [
-      {
-        id: "A1",
-        label: "A1 — Beginner",
-        description: "Basic survival phrases",
-        types: [
-          {
-            id: "roleplay",
-            label: "Roleplay",
-            scenarios: [
-              { language: "english", level: "A1", type: "roleplay", scenario: "first_meeting", label: "First Meeting" },
-              { language: "english", level: "A1", type: "roleplay", scenario: "haircut",        label: "Haircut" },
-              { language: "english", level: "A1", type: "roleplay", scenario: "job_interview",  label: "Job Interview" },
-            ],
-          },
-        ],
-      },
-      { id: "A2", label: "A2 — Elementary",        description: "Elementary daily conversation", types: [] },
-      { id: "B1", label: "B1 — Intermediate",      description: "Intermediate",                  types: [] },
-      { id: "B2", label: "B2 — Upper Intermediate", description: "Upper intermediate",            types: [] },
-      { id: "C1", label: "C1 — Advanced",           description: "Advanced proficiency",          types: [] },
-      { id: "C2", label: "C2 — Mastery",            description: "Near-native proficiency",       types: [] },
-    ],
+    levels: ["A1", "A2", "B1", "B2", "C1", "C2"].map((lvl, i) => {
+      const meta = [
+        { label: "A1 — Beginner",          description: "Basic survival phrases" },
+        { label: "A2 — Elementary",         description: "Elementary daily conversation" },
+        { label: "B1 — Intermediate",       description: "Intermediate conversation" },
+        { label: "B2 — Upper Intermediate", description: "Upper intermediate conversation" },
+        { label: "C1 — Advanced",           description: "Advanced proficiency" },
+        { label: "C2 — Mastery",            description: "Near-native proficiency" },
+      ][i];
+      const roleplay = [
+        { language: "english", level: lvl, type: "roleplay", scenario: "first_meeting", label: "First Meeting" },
+        { language: "english", level: lvl, type: "roleplay", scenario: "haircut",        label: "Haircut" },
+        { language: "english", level: lvl, type: "roleplay", scenario: "job_interview",  label: "Job Interview" },
+      ];
+      return { id: lvl, label: meta.label, description: meta.description, types: [{ id: "roleplay", label: "Roleplay", scenarios: roleplay }] };
+    }),
   },
 ];

@@ -15,10 +15,25 @@ const FURIGANA_INSTRUCTION = fs.readFileSync(
   "utf-8"
 );
 
+function loadLevelConstraints(language: string, level: string): string {
+  const langPath = path.join(SHARED, "languages", `${language}.json`);
+  if (!fs.existsSync(langPath)) return "";
+  const lang = JSON.parse(fs.readFileSync(langPath, "utf-8"));
+  const lvl = (lang.levels as Array<{ code: string; grammar_notes?: string }>)
+    ?.find((l) => l.code === level);
+  return lvl?.grammar_notes
+    ? `## Language Constraints (${level})\n${lvl.grammar_notes}`
+    : "";
+}
+
 function loadContext(language: string, level: string, scenario: string): string {
-  const filePath = path.join(SHARED, "contexts", language, level, `${scenario}.md`);
+  const flatPath = path.join(SHARED, "contexts", language, `${scenario}.md`);
+  const nestedPath = path.join(SHARED, "contexts", language, level, `${scenario}.md`);
+  const filePath = fs.existsSync(flatPath) ? flatPath : nestedPath;
   const raw = fs.readFileSync(filePath, "utf-8");
-  return raw.replace(/^---[\s\S]*?---\n/, "").trim();
+  const content = raw.replace(/^---[\s\S]*?---\n/, "").trim();
+  const constraints = loadLevelConstraints(language, level);
+  return constraints ? `${content}\n\n${constraints}` : content;
 }
 
 export async function POST(req: NextRequest) {
