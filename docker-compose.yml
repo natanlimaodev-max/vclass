@@ -1,0 +1,13 @@
+services:
+  kitsune-avatar:
+    build:
+      context: .
+      dockerfile: projects/kitsune-avatar/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - projects/kitsune-avatar/.env.local
+    volumes:
+      # VRM models are gitignored — mount from host
+      - ./projects/kitsune-avatar/public/models:/app/projects/kitsune-avatar/public/models:ro
+    restart: unless-stopped

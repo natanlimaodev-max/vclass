@@ -1,0 +1,11 @@
+**/.git
+**/.gitignore
+**/node_modules
+**/.next
+**/.venv
+**/public/models
+projects/kitsune-lang/
+**/*.md
+**/.env
+**/.env.local
+**/.env.*.local
