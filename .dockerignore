@@ -4,7 +4,7 @@
 **/.next
 **/.venv
 **/public/models
-projects/kitsune-lang/
+projects/vclass-console/
 **/*.md
 **/.env
 **/.env.local

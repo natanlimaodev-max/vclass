@@ -6,12 +6,12 @@ Monorepo for AI-powered Japanese language learning agents.
 
 | Project | Description | Interface | Status |
 |---------|-------------|-----------|--------|
-| [kitsune-avatar](projects/kitsune-avatar/) | Roleplay with animated 3D avatar | Web (Next.js) | Active |
-| [kitsune-lang](projects/kitsune-lang/) | Roleplay via terminal | CLI (Python) | Active |
+| [vclass](projects/vclass/) | Roleplay with animated 3D avatar | Web (Next.js) | Active |
+| [vclass-console](projects/vclass-console/) | Roleplay via terminal | CLI (Python) | Active |
 
 ---
 
-## kitsune-avatar
+## vclass
 
 Web app for practicing Japanese through immersive roleplay with an animated VRM avatar. The avatar speaks back via TTS, listens via mic, checks your grammar before sending, and exports Anki decks from your conversation.
 
@@ -38,11 +38,11 @@ git clone https://github.com/natanlimaodev-max/kitsune-agent.git
 cd kitsune-agent
 
 # 1. Configure environment
-cp projects/kitsune-avatar/.env.example projects/kitsune-avatar/.env.local
+cp projects/vclass/.env.example projects/vclass/.env.local
 # Edit .env.local with your API keys
 
 # 2. Add VRM model(s) — place your .vrm file at:
-#    projects/kitsune-avatar/public/models/<ModelName>/_VRM/<ModelName>.vrm
+#    projects/vclass/public/models/<ModelName>/_VRM/<ModelName>.vrm
 #    Default model path: public/models/Arisa/_VRM/Arisa.vrm
 
 # 3. Run
@@ -54,7 +54,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Quickstart without Docker
 
 ```bash
-cd projects/kitsune-avatar
+cd projects/vclass
 npm install
 
 cp .env.example .env.local
@@ -77,7 +77,7 @@ OPENROUTER_MODEL=openai/gpt-4o-mini # any model on OpenRouter
 VRM files are not included in this repo. Place your model at:
 
 ```
-projects/kitsune-avatar/public/models/<Name>/_VRM/<Name>.vrm
+projects/vclass/public/models/<Name>/_VRM/<Name>.vrm
 ```
 
 The default expected path is `public/models/Arisa/_VRM/Arisa.vrm`.  
@@ -85,7 +85,7 @@ Free VRM models: [VRoid Hub](https://hub.vroid.com)
 
 ---
 
-## kitsune-lang
+## vclass-console
 
 Console agent for practicing Japanese through immersive roleplay scenarios. Speak or type; the AI speaks back via TTS.
 
@@ -100,7 +100,7 @@ Console agent for practicing Japanese through immersive roleplay scenarios. Spea
 ### Setup
 
 ```bash
-cd projects/kitsune-lang
+cd projects/vclass-console
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -118,8 +118,8 @@ python main.py
 ```
 kitsune-agent/
 ├── projects/
-│   ├── kitsune-avatar/     # Next.js web app
-│   └── kitsune-lang/       # Python CLI
+│   ├── vclass/     # Next.js web app
+│   └── vclass-console/       # Python CLI
 ├── shared/
 │   ├── contexts/           # Scenario .md files (shared by both projects)
 │   └── prompts/            # LLM prompt templates
