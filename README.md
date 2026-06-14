@@ -1,4 +1,4 @@
-# Kitsune Agent
+# vclass
 
 Monorepo for AI-powered Japanese language learning agents.
 
@@ -34,8 +34,8 @@ Web app for practicing Japanese through immersive roleplay with an animated VRM 
 ### Quickstart with Docker
 
 ```bash
-git clone https://github.com/natanlimaodev-max/kitsune-agent.git
-cd kitsune-agent
+git clone https://github.com/natanlimaodev-max/vclass.git
+cd vclass
 
 # 1. Configure environment
 cp projects/vclass/.env.example projects/vclass/.env.local
@@ -116,7 +116,7 @@ python main.py
 ## Monorepo Structure
 
 ```
-kitsune-agent/
+vclass/
 ├── projects/
 │   ├── vclass/     # Next.js web app
 │   └── vclass-console/       # Python CLI
