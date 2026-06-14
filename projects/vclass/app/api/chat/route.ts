@@ -11,7 +11,7 @@ export interface Message {
 const SHARED = path.resolve(process.cwd(), "../../shared");
 
 const FURIGANA_INSTRUCTION = fs.readFileSync(
-  path.join(SHARED, "prompts/furigana.txt"),
+  path.join(SHARED, "prompts/japanese/furigana.txt"),
   "utf-8"
 );
 

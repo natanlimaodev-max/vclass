@@ -5,8 +5,8 @@ import fs from "fs";
 const SHARED = path.resolve(process.cwd(), "../../shared");
 
 const EXPLAIN_PROMPTS: Record<string, string> = {
-  japanese: "prompts/japanese_explain.txt",
-  english: "prompts/english_explain.txt",
+  japanese: "prompts/japanese/explain.txt",
+  english: "prompts/english/explain.txt",
 };
 
 export async function POST(req: NextRequest) {

@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
   const { sentence, language } = await req.json() as { sentence: string; language: string };
 
   const GRAMMAR_PROMPTS: Record<string, string> = {
-    japanese: "prompts/japanese_grammar.txt",
-    english: "prompts/english_grammar.txt",
+    japanese: "prompts/japanese/grammar.txt",
+    english: "prompts/english/grammar.txt",
   };
 
   const promptFile = GRAMMAR_PROMPTS[language];
