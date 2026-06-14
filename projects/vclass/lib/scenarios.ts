@@ -31,11 +31,11 @@ export const LANGUAGES: Language[] = [
     label: "Japanese",
     levels: ["N5", "N4", "N3", "N2", "N1"].map((lvl, i) => {
       const meta = [
-        { label: "N5 — Beginner",          description: "Basic survival phrases" },
-        { label: "N4 — Elementary",         description: "Elementary daily conversation" },
-        { label: "N3 — Intermediate",       description: "Intermediate conversation" },
-        { label: "N2 — Upper Intermediate", description: "Upper intermediate conversation" },
-        { label: "N1 — Advanced",           description: "Near-native proficiency" },
+        { label: "N5", description: "Understand some basic Japanese. Read hiragana, katakana, and basic kanji." },
+        { label: "N4", description: "Understand basic Japanese. Read passages in basic vocabulary and kanji from everyday situations." },
+        { label: "N3", description: "Understand Japanese used in everyday situations to a certain degree." },
+        { label: "N2", description: "Understand Japanese in everyday situations and a variety of circumstances." },
+        { label: "N1", description: "Understand Japanese used in a variety of circumstances." },
       ][i];
       const roleplay = [
         { language: "japanese", level: lvl, type: "roleplay", scenario: "first_meeting",     label: "First Meeting" },

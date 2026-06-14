@@ -4,32 +4,32 @@
   "levels": [
     {
       "code": "N5",
-      "label": "N5 — Beginner",
-      "description": "Basic survival phrases",
+      "label": "N5",
+      "description": "Understand some basic Japanese. Read hiragana, katakana, and basic kanji. Follow short slow conversations in daily and classroom situations.",
       "grammar_notes": "Use only ます/です polite form. JLPT N5 vocabulary only. SOV sentence structure. Simple present and past tense only. Short sentences (max 10 words). No て-form chains, no conditionals, no complex patterns."
     },
     {
       "code": "N4",
-      "label": "N4 — Elementary",
-      "description": "Elementary daily conversation",
+      "label": "N4",
+      "description": "Understand basic Japanese. Read passages in basic vocabulary and kanji from everyday situations. Follow slow daily conversations.",
       "grammar_notes": "Use ます/です polite form. JLPT N4 vocabulary. て-form for connecting actions. Simple conditionals (〜たら、〜と). Basic compound sentences. Expressions of desire (〜たい、〜てほしい)."
     },
     {
       "code": "N3",
-      "label": "N3 — Intermediate",
-      "description": "Intermediate conversation",
+      "label": "N3",
+      "description": "Understand Japanese used in everyday situations to a certain degree. Grasp newspaper headlines. Follow near-natural-speed conversations and understand relationships between speakers.",
       "grammar_notes": "Use both polite and casual registers as appropriate. JLPT N3 vocabulary. Passive voice (〜られる). Causative (〜させる). Relative clauses. Conjunctions like のに、ので、から、ながら. Wider range of topics including opinions and feelings."
     },
     {
       "code": "N2",
-      "label": "N2 — Upper Intermediate",
-      "description": "Upper intermediate conversation",
+      "label": "N2",
+      "description": "Understand Japanese in everyday situations and a variety of circumstances. Read newspapers and magazines. Follow coherent conversations and news reports at nearly natural speed.",
       "grammar_notes": "JLPT N2 vocabulary and grammar. Honorific and humble forms (keigo: 〜いただく、〜させていただく). Complex grammar patterns (〜にもかかわらず、〜に関して). Abstract and nuanced topics. Natural flow between polite and casual speech."
     },
     {
       "code": "N1",
-      "label": "N1 — Advanced",
-      "description": "Near-native proficiency",
+      "label": "N1",
+      "description": "Understand Japanese used in a variety of circumstances. Read logically complex and abstract texts such as editorials and critiques. Comprehend oral material at natural speed in varied settings.",
       "grammar_notes": "Full JLPT N1 grammar and vocabulary. Rich keigo (敬語). Idiomatic expressions, four-character idioms (四字熟語), literary forms. Complex sentence structures. Speak as a well-educated native Japanese speaker would in formal and informal contexts."
     }
   ]
