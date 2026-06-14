@@ -8,9 +8,10 @@ interface Props {
   onClose: () => void;
   /** If provided, skips the API fetch and shows this content directly. */
   content?: string;
+  language?: string;
 }
 
-export default function ExplainModal({ sentence, onClose, content: preloaded }: Props) {
+export default function ExplainModal({ sentence, onClose, content: preloaded, language }: Props) {
   const [explanation, setExplanation] = useState(preloaded ?? "");
   const [loading, setLoading] = useState(!preloaded);
 
@@ -19,7 +20,7 @@ export default function ExplainModal({ sentence, onClose, content: preloaded }: 
     fetch("/api/explain", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sentence }),
+      body: JSON.stringify({ sentence, language }),
     })
       .then((r) => r.json())
       .then((d) => setExplanation(d.explanation ?? d.error ?? "Error"))

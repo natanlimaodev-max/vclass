@@ -7,10 +7,11 @@ import ExplainModal from "./ExplainModal";
 
 interface Props {
   history: ChatMessage[];
+  language: string;
   onReplay: (text: string) => void;
 }
 
-export default function ChatPanel({ history, onReplay }: Props) {
+export default function ChatPanel({ history, language, onReplay }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [explaining, setExplaining] = useState<{ sentence: string; content?: string } | null>(null);
   const visible = history.filter((m) => m.role !== "system");
@@ -69,6 +70,7 @@ export default function ChatPanel({ history, onReplay }: Props) {
         <ExplainModal
           sentence={explaining.sentence}
           content={explaining.content}
+          language={language}
           onClose={() => setExplaining(null)}
         />
       )}

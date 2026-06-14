@@ -4,11 +4,17 @@ import fs from "fs";
 
 const SHARED = path.resolve(process.cwd(), "../../shared");
 
+const EXPLAIN_PROMPTS: Record<string, string> = {
+  japanese: "prompts/japanese_explain.txt",
+  english: "prompts/english_explain.txt",
+};
+
 export async function POST(req: NextRequest) {
-  const { sentence } = await req.json() as { sentence: string };
+  const { sentence, language } = await req.json() as { sentence: string; language?: string };
+  const promptFile = EXPLAIN_PROMPTS[language ?? "japanese"] ?? EXPLAIN_PROMPTS["japanese"];
   // Read on each request so prompt edits take effect without restart
   const template = fs.readFileSync(
-    path.join(SHARED, "prompts/japanese_explain.txt"),
+    path.join(SHARED, promptFile),
     "utf-8"
   );
   const prompt = template.replace("{sentence}", sentence);

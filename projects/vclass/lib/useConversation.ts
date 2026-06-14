@@ -140,7 +140,7 @@ export function useConversation(
     const explainPromise = fetch("/api/explain", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sentence: stripFurigana(data.content) }),
+      body: JSON.stringify({ sentence: stripFurigana(data.content), language: scenario.language }),
     })
       .then((r) => r.json())
       .then((d) => (d.explanation as string) ?? null)
@@ -187,7 +187,7 @@ export function useConversation(
       const explainPromise = fetch("/api/explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sentence: stripFurigana(data.content) }),
+        body: JSON.stringify({ sentence: stripFurigana(data.content), language: scenario.language }),
       }).then(r => r.json()).then(d => (d.explanation as string) ?? null).catch(() => null);
       const audioResult = await playAudio(data.content);
       const explainContent = await explainPromise;

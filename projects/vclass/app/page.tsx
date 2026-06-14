@@ -52,7 +52,7 @@ function ConversationPanel({
         </div>
       </div>
 
-      <ChatPanel history={history} onReplay={replayAudio} />
+      <ChatPanel history={history} language={scenario.language} onReplay={replayAudio} />
 
       <InputBar
         status={status}

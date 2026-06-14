@@ -52,4 +52,31 @@ export const LANGUAGES: Language[] = [
       { id: "N1", label: "N1 — Advanced",            description: "Near-native proficiency",       types: [] },
     ],
   },
+  {
+    id: "english",
+    label: "English",
+    levels: [
+      {
+        id: "A1",
+        label: "A1 — Beginner",
+        description: "Basic survival phrases",
+        types: [
+          {
+            id: "roleplay",
+            label: "Roleplay",
+            scenarios: [
+              { language: "english", level: "A1", type: "roleplay", scenario: "first_meeting", label: "First Meeting" },
+              { language: "english", level: "A1", type: "roleplay", scenario: "haircut",        label: "Haircut" },
+              { language: "english", level: "A1", type: "roleplay", scenario: "job_interview",  label: "Job Interview" },
+            ],
+          },
+        ],
+      },
+      { id: "A2", label: "A2 — Elementary",        description: "Elementary daily conversation", types: [] },
+      { id: "B1", label: "B1 — Intermediate",      description: "Intermediate",                  types: [] },
+      { id: "B2", label: "B2 — Upper Intermediate", description: "Upper intermediate",            types: [] },
+      { id: "C1", label: "C1 — Advanced",           description: "Advanced proficiency",          types: [] },
+      { id: "C2", label: "C2 — Mastery",            description: "Near-native proficiency",       types: [] },
+    ],
+  },
 ];

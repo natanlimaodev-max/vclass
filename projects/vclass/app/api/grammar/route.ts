@@ -7,12 +7,18 @@ const SHARED = path.resolve(process.cwd(), "../../shared");
 export async function POST(req: NextRequest) {
   const { sentence, language } = await req.json() as { sentence: string; language: string };
 
-  if (language !== "japanese") {
+  const GRAMMAR_PROMPTS: Record<string, string> = {
+    japanese: "prompts/japanese_grammar.txt",
+    english: "prompts/english_grammar.txt",
+  };
+
+  const promptFile = GRAMMAR_PROMPTS[language];
+  if (!promptFile) {
     return NextResponse.json({ ok: true, explanation: null });
   }
 
   const template = fs.readFileSync(
-    path.join(SHARED, "prompts/japanese_grammar.txt"),
+    path.join(SHARED, promptFile),
     "utf-8"
   );
   const prompt = template.replace("{sentence}", sentence);
