@@ -28,7 +28,7 @@ Web app for practicing Japanese through immersive roleplay with an animated VRM 
 
 - [OpenRouter](https://openrouter.ai) API key
 - [ElevenLabs](https://elevenlabs.io) API key + Voice ID
-- VRM model files (not included — see below)
+- A VRM model (the default "Arisa" model is included — see below)
 - Docker (recommended) or Node.js 20+
 
 ### Quickstart with Docker
@@ -41,9 +41,9 @@ cd vclass
 cp projects/vclass/.env.example projects/vclass/.env.local
 # Edit .env.local with your API keys
 
-# 2. Add VRM model(s) — place your .vrm file at:
+# 2. (Optional) The default avatar is included. To use another model, place it at
 #    projects/vclass/public/models/<ModelName>/_VRM/<ModelName>.vrm
-#    Default model path: public/models/Arisa/_VRM/Arisa.vrm
+#    and set NEXT_PUBLIC_VRM_URL=/models/<ModelName>/_VRM/<ModelName>.vrm
 
 # 3. Run
 docker compose up --build
@@ -83,17 +83,16 @@ RATE_LIMIT_PER_MINUTE=60            # optional: API requests per minute per IP (
 The Hobby plan is free for personal, non-commercial use. Hosting costs nothing;
 OpenRouter and ElevenLabs usage is billed by those services.
 
-1. **Host the VRM model** (it is gitignored, so it isn't deployed with the code).
-   For example, on Cloudflare R2 (free tier): create a bucket, upload the `.vrm`,
-   enable *Public access → R2.dev subdomain*, and add a CORS rule allowing `GET`
-   from your Vercel domain. Copy the public URL of the file.
+1. The default avatar ships with the repo, so there's nothing to host. (For a
+   model you can't commit, upload it to e.g. Cloudflare R2 with public access and
+   a CORS rule allowing `GET` from your domain, and use its URL in step 4.)
 2. On [vercel.com/new](https://vercel.com/new), import this repository.
 3. Set **Root Directory** to `projects/vclass` and keep *Include files outside
    the root directory in the Build Step* enabled (the API reads `shared/`).
 4. Add the environment variables:
    `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `ELEVENLABS_API_KEY`,
-   `ELEVENLABS_VOICE_ID`, **`APP_PASSWORD`** and `NEXT_PUBLIC_VRM_URL`
-   (the model URL from step 1).
+   `ELEVENLABS_VOICE_ID`, **`APP_PASSWORD`** and, only for an external model,
+   `NEXT_PUBLIC_VRM_URL`.
 5. Deploy. Every push to `main` redeploys automatically.
 
 Notes for serverless hosting:
@@ -113,14 +112,13 @@ See [ARCHITECTURE.md](projects/vclass/ARCHITECTURE.md) for how the app is put to
 
 ### VRM Models
 
-VRM files are not included in this repo. Place your model at:
+The default avatar, **Arisa** by Dai Yong Xiang, is included at
+`projects/vclass/public/models/Arisa/_VRM/Arisa.vrm` under CC BY
+(see [CREDITS.md](projects/vclass/public/models/Arisa/CREDITS.md)).
 
-```
-projects/vclass/public/models/<Name>/_VRM/<Name>.vrm
-```
-
-The default expected path is `public/models/Arisa/_VRM/Arisa.vrm`.  
-Free VRM models: [VRoid Hub](https://hub.vroid.com)
+Other `.vrm` files stay gitignored. To use your own model, place it at
+`projects/vclass/public/models/<Name>/_VRM/<Name>.vrm` and set
+`NEXT_PUBLIC_VRM_URL` to its path. Free VRM models: [VRoid Hub](https://hub.vroid.com)
 
 ---
 
