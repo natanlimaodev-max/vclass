@@ -27,7 +27,7 @@ export const POST = apiRoute(async (req) => {
 
   const language = formData.get("language");
   const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) throw new HttpError("ElevenLabs is not configured", 500);
+  if (!apiKey) throw new HttpError("ELEVENLABS_API_KEY is not configured", 500);
 
   const body = new FormData();
   body.append("file", audio, "recording.webm");

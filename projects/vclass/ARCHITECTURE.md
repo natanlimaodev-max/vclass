@@ -120,7 +120,7 @@ Prompts are read on each request, so edits apply without a restart.
 | `OPENROUTER_API_KEY` | yes | LLM access |
 | `OPENROUTER_MODEL` | no | default `openai/gpt-4o-mini` |
 | `ELEVENLABS_API_KEY` | yes | TTS and STT |
-| `ELEVENLABS_VOICE_ID` | yes | avatar voice |
+| `ELEVENLABS_VOICE_ID` | no | avatar voice (default `21m00Tcm4TlvDq8ikWAM`) |
 | `APP_PASSWORD` | no | enables the login prompt |
 | `RATE_LIMIT_PER_MINUTE` | no | API requests per minute per IP |
 | `NEXT_PUBLIC_VRM_URL` | no | avatar model URL (default `/models/Arisa/_VRM/Arisa.vrm`) |
