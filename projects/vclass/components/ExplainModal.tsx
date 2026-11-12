@@ -26,7 +26,7 @@ export default function ExplainModal({ sentence, onClose, content: preloaded, la
       .then((d) => setExplanation(d.explanation ?? d.error ?? "Error"))
       .catch(() => setExplanation("Failed to load explanation."))
       .finally(() => setLoading(false));
-  }, [sentence, preloaded]);
+  }, [sentence, preloaded, language]);
 
   return (
     <div
@@ -34,7 +34,7 @@ export default function ExplainModal({ sentence, onClose, content: preloaded, la
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 border border-zinc-700 rounded-2xl w-[50vw] max-h-[80vh] flex flex-col"
+        className="bg-zinc-900 border border-zinc-700 rounded-2xl w-[calc(100vw-2rem)] max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

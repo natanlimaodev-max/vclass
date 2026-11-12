@@ -1,34 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { apiRoute, HttpError, readJson, requireText } from "@/lib/server/http";
+import { stripFurigana } from "@/lib/text";
 
-export async function POST(req: NextRequest) {
-  const { text: rawText, voice_id } = await req.json() as { text: string; voice_id?: string };
-  const voiceId = voice_id ?? process.env.ELEVENLABS_VOICE_ID;
-  // Strip furigana annotations [reading] before TTS — speak only kanji/kana
-  const text = rawText.replace(/\s*\[[^\]]+\]/g, "");
+export const POST = apiRoute(async (req) => {
+  const body = await readJson(req);
+  // Speak only the base text, not the furigana readings.
+  const text = stripFurigana(requireText(body.text, "text", 2000));
+  // The voice is fixed by the server; the client cannot pick another one.
+  const voiceId = process.env.ELEVENLABS_VOICE_ID;
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!voiceId || !apiKey) throw new HttpError("ElevenLabs is not configured", 500);
 
   const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
     {
       method: "POST",
-      headers: {
-        "xi-api-key": process.env.ELEVENLABS_API_KEY!,
-        "Content-Type": "application/json",
-      },
+      headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
         text,
         model_id: "eleven_multilingual_v2",
         voice_settings: { stability: 0.5, similarity_boost: 0.75 },
       }),
+      signal: AbortSignal.timeout(60_000),
     }
-  );
+  ).catch((err) => {
+    console.error("ElevenLabs TTS request failed:", err);
+    throw new HttpError("Could not reach the speech service", 502);
+  });
 
   if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json({ error: err }, { status: res.status });
+    console.error("ElevenLabs TTS error:", res.status, await res.text().catch(() => ""));
+    throw new HttpError(`Speech service error (${res.status})`, 502);
   }
 
-  const audio = await res.arrayBuffer();
-  return new NextResponse(audio, {
+  return new NextResponse(await res.arrayBuffer(), {
     headers: { "Content-Type": "audio/mpeg" },
   });
-}
+});

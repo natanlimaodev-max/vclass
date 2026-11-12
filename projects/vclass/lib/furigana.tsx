@@ -1,6 +1,6 @@
 import React from "react";
 
-// Matches kanji+ optional-okurigana [reading] — same logic as kitsune-lang _ANNOTATED_RE
+// Matches kanji + optional okurigana followed by [reading] — same format the console app uses
 // Kanji: U+4E00-U+9FFF (CJK Unified) + U+3400-U+4DBF (Extension A)
 // Okurigana: U+3041-U+3096 (hiragana)
 const FURIGANA_RE = /([一-鿿㐀-䶿]+[ぁ-ゖ]*)\s*\[([^\]]+)\]/g;

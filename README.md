@@ -70,7 +70,22 @@ OPENROUTER_API_KEY=sk-or-...        # openrouter.ai
 ELEVENLABS_API_KEY=sk-...           # elevenlabs.io
 ELEVENLABS_VOICE_ID=21m00Tcm4T...   # voice ID from ElevenLabs dashboard
 OPENROUTER_MODEL=openai/gpt-4o-mini # any model on OpenRouter
+APP_PASSWORD=                       # optional: password prompt for the whole app
+RATE_LIMIT_PER_MINUTE=60            # optional: API requests per minute per IP (0 = off)
 ```
+
+> **Before exposing the app to the internet, set `APP_PASSWORD`.** The API routes
+> use your OpenRouter and ElevenLabs keys, so an open deployment lets anyone spend
+> your credits.
+
+### Development
+
+```bash
+cd projects/vclass
+npm run lint && npm run typecheck && npm test && npm run build
+```
+
+See [ARCHITECTURE.md](projects/vclass/ARCHITECTURE.md) for how the app is put together.
 
 ### VRM Models
 

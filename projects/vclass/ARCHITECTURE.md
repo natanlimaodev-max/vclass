@@ -1,290 +1,141 @@
-# kitsune-avatar — Architecture
+# vclass (web) — Architecture
 
-## Vision
+Web app for practicing a language through roleplay with an animated VRM avatar.
+The user picks a language, level and scenario; the AI character opens the
+conversation, speaks with TTS, listens through the mic, checks the user's
+grammar before sending, and can export the conversation as an Anki deck.
 
-Web-based language learning agent with an animated VRM 3D avatar. User converses with the AI character through the browser — the avatar speaks, reacts with expressions, and listens via mic. Parallel project to `kitsune-lang` (Python CLI); same concept, different interface.
-
----
-
-## Monorepo Position
-
-```
-kitsune-agent/
-├── projects/
-│   ├── kitsune-lang/     # Python CLI agent (existing)
-│   └── kitsune-avatar/   # Web agent with VRM avatar (this project)
-├── shared/               # Future: shared types/constants
-└── README.md
-```
-
-`kitsune-avatar` is self-contained — no runtime dependency on `kitsune-lang`. Both projects implement the same language learning loop independently.
+The Python CLI in `projects/vclass-console` implements the same idea in the
+terminal. The two apps share nothing at runtime except the files in `shared/`
+(the console still keeps its own copy of the Japanese N5 contexts).
 
 ---
 
 ## Stack
 
-| Layer | Technology | Reason |
-|---|---|---|
-| Framework | Next.js 15 (App Router) | Frontend + API in one project |
-| Language | TypeScript | Type safety across front and back |
-| 3D Rendering | Three.js + `@pixiv/three-vrm` | VRM standard, maintained by Pixiv |
-| UI | React + Tailwind CSS | Component model, utility styling |
-| Real-time | WebSocket (native `ws`) | Avatar event stream from server to client |
-| LLM | OpenRouter (fetch, OpenAI-compatible) | Swap models via env var |
-| TTS | ElevenLabs JS SDK | Same provider as kitsune-lang |
-| STT | ElevenLabs JS SDK | Browser `MediaRecorder` → API Route |
-| Audio | Web Audio API (browser native) | Playback + volume analysis for lip sync |
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, route handlers, `proxy.ts`) |
+| UI | React 19 + Tailwind CSS 4 |
+| 3D | Three.js + `@pixiv/three-vrm` |
+| LLM | OpenRouter chat completions (plain `fetch`, model from `OPENROUTER_MODEL`) |
+| TTS / STT | ElevenLabs REST API (`eleven_multilingual_v2`, `scribe_v1`) |
+| Lip sync | Web Audio `AnalyserNode` volume → VRM `aa` expression |
+| Anki export | `sql.js` (SQLite in WASM) + `jszip` → `.apkg` |
+| Tests / lint | Vitest, ESLint (`eslint-config-next`) |
+
+There is no WebSocket and no database: every call is a stateless HTTP request,
+and the conversation lives in React state in the browser.
 
 ---
 
-## Architecture Overview
+## Conversation flow
 
 ```
-Browser
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│  ┌──────────────┐        ┌───────────────────────┐  │
-│  │  VRM Renderer │◄──────│   Avatar Controller   │  │
-│  │  (Three.js)  │        │  (expressions, bones) │  │
-│  └──────────────┘        └───────────┬───────────┘  │
-│                                      │               │
-│  ┌──────────────┐        ┌───────────▼───────────┐  │
-│  │   Mic Input  │        │    WebSocket Client   │  │
-│  │ (MediaRecorder)       │  receives avatar events│  │
-│  └──────┬───────┘        └───────────────────────┘  │
-│         │                                            │
-└─────────┼──────────────────────────────────────────-┘
-          │ HTTP                            ▲ WS
-          ▼                                │
-Next.js Server
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│  API Routes                WebSocket Server         │
-│  ┌────────────────┐        ┌─────────────────────┐  │
-│  │ POST /api/chat │        │  /api/ws             │  │
-│  │  → OpenRouter  │        │  pushes avatar events│  │
-│  ├────────────────┤        │  to connected client │  │
-│  │ POST /api/tts  │        └─────────────────────┘  │
-│  │  → ElevenLabs  │                                  │
-│  ├────────────────┤                                  │
-│  │ POST /api/stt  │                                  │
-│  │  → ElevenLabs  │                                  │
-│  └────────────────┘                                  │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+Scenario picked
+  └─ POST /api/chat {history: []}        → assistant opens the conversation
+       ├─ POST /api/tts                  → audio + lip sync
+       └─ POST /api/explain (parallel)   → pre-fetched "explain" content
+
+User types or speaks
+  ├─ (speaking) POST /api/stt            → transcript fills the input
+  ├─ POST /api/grammar                   → {ok, explanation}
+  │     ok=false → input is flagged, user must correct it
+  └─ POST /api/chat {history}            → next assistant turn (+ tts, explain)
+
+"End" → POST /api/export/anki {cards}    → .apkg download
 ```
+
+The client logic lives in `lib/useConversation.ts`. Errors from any step are
+shown in a banner above the input with a **Retry** button.
 
 ---
 
-## Conversation Flow
+## Security model
 
-```
-[User opens browser]
-        │
-        ▼
-Load VRM model → idle animation starts
-        │
-        ▼
-User selects language + level + scenario
-        │
-        ▼
-POST /api/chat (system prompt from scenario)
-        │
-        ▼
-LLM returns opening line
-        │
-        ▼
-POST /api/tts → returns audio bytes
-        │
-        ├──► Browser plays audio (Web Audio API)
-        │         │
-        │         └──► Lip sync: volume → mouth BlendShape
-        │
-        └──► WS emits { type: "expression", name: "happy", value: 0.8 }
-                  │
-                  └──► Avatar Controller applies expression
-        │
-        ▼
-User action:
-  [🎤 Speak]  → MediaRecorder captures → POST /api/stt → text
-  [⌨️  Type]  → text input
-  [↩️  Retry] → discard last user turn
-  [🚪 Exit]  → end session
-        │
-        ▼
-Append to history → POST /api/chat → next LLM response → (loop)
-```
+- **System prompt is server-only.** `/api/chat` accepts only `user`/`assistant`
+  turns and rebuilds the system prompt on every request from
+  `shared/contexts`, `shared/languages` and `shared/prompts`.
+- **Inputs are validated** (`lib/server/shared.ts`): `language` must have a
+  `shared/languages/<code>.json`, `level` must be listed in it, and `scenario`
+  must be a slug with a matching context file. Paths can't escape `shared/`.
+  Text fields, history length, audio size and Anki card counts are capped.
+- **The TTS voice is fixed** by `ELEVENLABS_VOICE_ID`; the client can't choose it.
+- **Optional password** (`APP_PASSWORD`): `proxy.ts` requires HTTP Basic auth
+  for the whole app. Set it whenever the app is reachable from the internet,
+  since the API routes spend your OpenRouter/ElevenLabs credits.
+- **Rate limit** (`RATE_LIMIT_PER_MINUTE`, default 60, `0` disables): per IP,
+  in memory, per server process. It reads `X-Forwarded-For`, so only trust it
+  behind a reverse proxy that sets that header.
 
 ---
 
-## Avatar Event Protocol
-
-Server → Client over WebSocket. All events are JSON.
-
-```ts
-type AvatarEvent =
-  | { type: "expression"; name: ExpressionName; value: number }  // 0.0–1.0
-  | { type: "speak";      duration_ms: number }                  // triggers lip sync
-  | { type: "idle" }                                             // return to neutral
-  | { type: "blink" }                                            // forced blink
-```
-
-```ts
-type ExpressionName =
-  | "happy" | "sad" | "surprised" | "angry" | "relaxed"  // VRM preset
-  | "aa" | "ih" | "ou" | "ee" | "oh"                     // viseme (lip sync)
-```
-
-### Emotion detection
-
-LLM response is passed through a lightweight classifier (second LLM call with small/fast model, or regex heuristics) to extract `ExpressionName` before TTS plays. This keeps lip sync and expression in sync with audio.
-
----
-
-## Lip Sync Strategy
-
-No phoneme analysis. Volume-based approximation:
+## Directory structure
 
 ```
-Web Audio API AnalyserNode → getByteFrequencyData() each frame
-→ compute RMS volume (0.0–1.0)
-→ vrm.expressionManager.setValue("aa", volume * 0.9)
-→ vrm.update(delta)
-```
-
-Good enough for conversational pacing. Can upgrade to phoneme-level later with a dedicated library.
-
----
-
-## Directory Structure
-
-```
-projects/kitsune-avatar/
+projects/vclass/
 ├── app/
-│   ├── layout.tsx
-│   ├── page.tsx                  # Main UI: scenario selector + chat + avatar canvas
+│   ├── page.tsx                 # layout: avatar + conversation panel
 │   └── api/
-│       ├── chat/route.ts         # POST: LLM via OpenRouter
-│       ├── tts/route.ts          # POST: text → audio bytes (ElevenLabs)
-│       ├── stt/route.ts          # POST: audio blob → transcript (ElevenLabs)
-│       └── ws/route.ts           # WebSocket upgrade: avatar event stream
-│
-├── components/
-│   ├── AvatarCanvas.tsx          # Three.js scene, VRM loader, render loop
-│   ├── AvatarController.ts       # BlendShape + bone control API
-│   ├── ChatPanel.tsx             # Conversation history display
-│   ├── InputBar.tsx              # Speak / Type / Retry / Exit actions
-│   └── ScenarioSelector.tsx      # Language + level + scenario picker
-│
+│       ├── chat/route.ts        # next assistant turn
+│       ├── grammar/route.ts     # grammar check (JSON verdict)
+│       ├── explain/route.ts     # sentence breakdown
+│       ├── tts/route.ts         # ElevenLabs text-to-speech
+│       ├── stt/route.ts         # ElevenLabs speech-to-text
+│       └── export/anki/route.ts # .apkg generation
+├── components/                  # AvatarCanvas, ChatPanel, InputBar, modals
 ├── lib/
-│   ├── vrm.ts                    # VRM loader wrapper (@pixiv/three-vrm)
-│   ├── lipSync.ts                # Web Audio volume → mouth BlendShape
-│   ├── wsClient.ts               # WebSocket client singleton
-│   ├── conversation.ts           # History management, chat loop logic
-│   └── emotion.ts                # LLM response → ExpressionName classifier
-│
-├── contexts/                     # Same .md scenario format as kitsune-lang
-│   ├── japanese/
-│   │   └── N5/
-│   │       ├── haircut.md
-│   │       ├── first_meeting.md
-│   │       └── arubaito_interview.md
-│   └── english/
-│
-├── public/
-│   └── models/
-│       └── kitsune.vrm           # VRM model file
-│
-├── .env.local
-├── .env.example
-├── package.json
-├── tsconfig.json
-└── next.config.ts
+│   ├── server/
+│   │   ├── shared.ts            # reads/validates shared/ files, builds prompts
+│   │   ├── openrouter.ts        # chatCompletion() with timeout + error handling
+│   │   └── http.ts              # apiRoute() wrapper, rate limit, input helpers
+│   ├── useConversation.ts       # client conversation state machine
+│   ├── scenarios.ts             # language/level/scenario menu
+│   ├── AvatarController.ts      # rest pose, blinking, mouth
+│   ├── vrm.ts, lipSync.ts       # VRM loading, audio-driven mouth
+│   ├── furigana.tsx, text.ts    # furigana rendering / stripping
+│   └── types.ts
+├── tests/                       # Vitest unit tests
+└── proxy.ts                     # optional password protection
 ```
+
+`shared/` (monorepo root) holds the content: `contexts/<language>/<scenario>.md`
+(optionally `contexts/<language>/<level>/<scenario>.md`), `languages/*.json`
+(levels and grammar notes appended to the system prompt) and
+`prompts/<language>/{grammar,explain,furigana}.txt` (`{sentence}` is replaced).
+Prompts are read on each request, so edits apply without a restart.
+
+### Adding a scenario
+
+1. Add `shared/contexts/<language>/<scenario>.md`.
+2. Add it to `lib/scenarios.ts` so it shows in the menu.
+3. `npm test` checks that every menu entry resolves to a valid prompt.
 
 ---
 
-## API Routes
+## Environment variables
 
-### `POST /api/chat`
-
-```ts
-// Request
-{ history: Message[], model?: string }
-
-// Response
-{ content: string, emotion: ExpressionName }
-```
-
-### `POST /api/tts`
-
-```ts
-// Request
-{ text: string, voice_id?: string }
-
-// Response
-audio/mpeg stream (streamed for lower latency)
-```
-
-### `POST /api/stt`
-
-```ts
-// Request
-multipart/form-data: audio blob (webm/wav)
-
-// Response
-{ transcript: string }
-```
-
-### `GET /api/ws`
-
-WebSocket upgrade. Server holds connection per session, pushes `AvatarEvent` JSON frames. One connection per browser tab.
+| Variable | Required | Purpose |
+|---|---|---|
+| `OPENROUTER_API_KEY` | yes | LLM access |
+| `OPENROUTER_MODEL` | no | default `openai/gpt-4o-mini` |
+| `ELEVENLABS_API_KEY` | yes | TTS and STT |
+| `ELEVENLABS_VOICE_ID` | yes | avatar voice |
+| `APP_PASSWORD` | no | enables the login prompt |
+| `RATE_LIMIT_PER_MINUTE` | no | API requests per minute per IP |
+| `SHARED_DIR` | no | override the path to `shared/` |
 
 ---
 
-## Environment Variables
+## Development
 
-```env
-OPENROUTER_API_KEY=sk-or-...
-OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
-ELEVENLABS_API_KEY=sk-...
-ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM
+```bash
+npm run dev        # dev server
+npm run lint       # ESLint
+npm run typecheck  # tsc --noEmit
+npm test           # Vitest
+npm run build      # production build
 ```
 
----
-
-## Implementation Phases
-
-### Phase 1 — Static VRM renderer
-- Next.js project scaffold
-- `AvatarCanvas` with VRM loaded and idle loop
-- Manual BlendShape control via `AvatarController` (no conversation yet)
-
-### Phase 2 — Conversation backend
-- `/api/chat`, `/api/tts`, `/api/stt` routes
-- `ChatPanel` + `InputBar` UI
-- Text-only conversation loop (no avatar animation yet)
-
-### Phase 3 — Avatar integration
-- WebSocket server + client
-- Emotion classifier wired to `/api/chat` response
-- WS pushes `expression` events → `AvatarController` applies
-- TTS audio plays in browser
-
-### Phase 4 — Lip sync
-- `lipSync.ts` — Web Audio AnalyserNode → mouth BlendShape per frame
-- Synchronized with TTS audio playback
-
-### Phase 5 — Polish
-- Scenario selector UI
-- Idle animations (random blinks, subtle head sway)
-- Error states, loading indicators
-- Mobile layout
-
----
-
-## Shared with kitsune-lang
-
-- Scenario `.md` format — identical frontmatter + body structure
-- Language/level definitions — may extract to `shared/` as JSON later
-- API providers — same OpenRouter + ElevenLabs keys work for both projects
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests, build and
+`npm audit --omit=dev --audit-level=high` on every PR.

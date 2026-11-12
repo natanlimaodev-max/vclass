@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ConversationStatus, GrammarFlagged } from "@/lib/useConversation";
 import ExplainModal from "./ExplainModal";
 
@@ -8,6 +8,9 @@ interface Props {
   status: ConversationStatus;
   pendingTranscript: string;
   grammarFlagged: GrammarFlagged | null;
+  error: string | null;
+  onRetry: () => void;
+  onDismissError: () => void;
   onSendText: (text: string) => void;
   onResend: () => void;
   onClearFlag: () => void;
@@ -17,7 +20,7 @@ interface Props {
 }
 
 export default function InputBar({
-  status, pendingTranscript, grammarFlagged,
+  status, pendingTranscript, grammarFlagged, error, onRetry, onDismissError,
   onSendText, onResend, onClearFlag, onStartRecording, onStopRecording, onTranscriptChange,
 }: Props) {
   const [text, setText] = useState("");
@@ -25,14 +28,20 @@ export default function InputBar({
   const busy = status === "loading" || status === "playing" || status === "transcribing" || status === "checking";
   const flagged = grammarFlagged !== null;
 
-  useEffect(() => {
+  // Sync the input with new transcripts / flagged messages when those props change
+  // (render-time adjustment instead of setState inside an effect).
+  const [prevTranscript, setPrevTranscript] = useState(pendingTranscript);
+  if (pendingTranscript !== prevTranscript) {
+    setPrevTranscript(pendingTranscript);
     if (pendingTranscript) setText(pendingTranscript);
-  }, [pendingTranscript]);
+  }
 
-  useEffect(() => {
+  const [prevFlagged, setPrevFlagged] = useState(grammarFlagged);
+  if (grammarFlagged !== prevFlagged) {
+    setPrevFlagged(grammarFlagged);
     if (grammarFlagged) setText(grammarFlagged.text);
     else setShowExplain(false);
-  }, [grammarFlagged]);
+  }
 
   const handleSubmit = () => {
     if (!text.trim() || busy || flagged) return;
@@ -43,6 +52,20 @@ export default function InputBar({
 
   return (
     <div className="border-t border-zinc-800 p-4 flex flex-col gap-3">
+      {error && (
+        <div role="alert" className="flex items-start justify-between gap-3 rounded-xl bg-red-950/60 border border-red-700/60 px-3 py-2">
+          <p className="text-xs text-red-300 flex-1">{error}</p>
+          <div className="flex gap-3 shrink-0">
+            <button onClick={onRetry} className="text-xs text-red-200 hover:text-white transition-colors">
+              Retry
+            </button>
+            <button onClick={onDismissError} aria-label="Dismiss error" className="text-xs text-red-400 hover:text-red-200 transition-colors">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <input
           type="text"

@@ -1,55 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
+import { NextResponse } from "next/server";
+import { apiRoute, readJson, requireText } from "@/lib/server/http";
+import { chatCompletion } from "@/lib/server/openrouter";
+import { assertLanguage, renderPrompt } from "@/lib/server/shared";
 
-const SHARED = path.resolve(process.cwd(), "../../shared");
-
-export async function POST(req: NextRequest) {
-  const { sentence, language } = await req.json() as { sentence: string; language: string };
-
-  const GRAMMAR_PROMPTS: Record<string, string> = {
-    japanese: "prompts/japanese/grammar.txt",
-    english: "prompts/english/grammar.txt",
-  };
-
-  const promptFile = GRAMMAR_PROMPTS[language];
-  if (!promptFile) {
-    return NextResponse.json({ ok: true, explanation: null });
-  }
-
-  const template = fs.readFileSync(
-    path.join(SHARED, promptFile),
-    "utf-8"
-  );
-  const prompt = template.replace("{sentence}", sentence);
-
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json({ error: err }, { status: res.status });
-  }
-
-  const data = await res.json();
-  const raw: string = data.choices[0].message.content;
-
+/** Pull the first {...} block out of a reply, tolerating ```json fences or extra prose. */
+function extractJson(raw: string): { ok?: unknown; explanation?: unknown } | null {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start === -1 || end <= start) return null;
   try {
-    const parsed = JSON.parse(raw.trim());
-    return NextResponse.json({
-      ok: Boolean(parsed.ok),
-      explanation: parsed.explanation ?? null,
-    });
+    return JSON.parse(raw.slice(start, end + 1));
   } catch {
-    return NextResponse.json({ ok: true, explanation: null });
+    return null;
   }
 }
+
+export const POST = apiRoute(async (req) => {
+  const body = await readJson(req);
+  const sentence = requireText(body.sentence, "sentence", 2000);
+  const language = assertLanguage(body.language);
+
+  const prompt = renderPrompt(language, "grammar", sentence);
+  if (!prompt) return NextResponse.json({ ok: true, explanation: null, checked: false });
+
+  const raw = await chatCompletion([{ role: "user", content: prompt }]);
+  const parsed = extractJson(raw);
+  if (!parsed) {
+    // Fail open so the conversation is never blocked, but tell the client the check didn't run.
+    console.warn("Grammar check returned non-JSON:", raw.slice(0, 200));
+    return NextResponse.json({ ok: true, explanation: null, checked: false });
+  }
+  return NextResponse.json({
+    ok: Boolean(parsed.ok),
+    explanation: typeof parsed.explanation === "string" ? parsed.explanation : null,
+    checked: true,
+  });
+});
