@@ -32,6 +32,10 @@ out/
 *.fbx
 *.meta
 **/public/models/
+# Exception: the default avatar (CC BY, see public/models/Arisa/CREDITS.md) is versioned.
+!projects/vclass/public/models/
+!projects/vclass/public/models/Arisa/
+!projects/vclass/public/models/Arisa/**
 
 # ── OS ───────────────────────────────────────────────
 .DS_Store

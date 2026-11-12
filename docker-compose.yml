@@ -7,7 +7,4 @@ services:
       - "3000:3000"
     env_file:
       - projects/vclass/.env.local
-    volumes:
-      # VRM models are gitignored — mount from host
-      - ./projects/vclass/public/models:/app/projects/vclass/public/models:ro
     restart: unless-stopped

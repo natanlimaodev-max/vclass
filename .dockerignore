@@ -3,9 +3,10 @@
 **/node_modules
 **/.next
 **/.venv
-**/public/models
 projects/vclass-console/
 **/*.md
+# ...except the scenario contexts, which the API reads at runtime
+!shared/**/*.md
 **/.env
 **/.env.local
 **/.env.*.local
