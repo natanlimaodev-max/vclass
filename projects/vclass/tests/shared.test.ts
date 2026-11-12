@@ -43,6 +43,14 @@ describe("renderPrompt", () => {
   });
 });
 
+describe("grammar prompt", () => {
+  it("fills in the student's level", () => {
+    const out = renderPrompt("english", "grammar", "And you?", "A2");
+    expect(out).toContain("nível A2");
+    expect(out).not.toContain("{level}");
+  });
+});
+
 describe("stripFurigana", () => {
   it("removes bracketed readings", () => {
     expect(stripFurigana("今日 [きょう]は天気 [てんき]がいい")).toBe("今日は天気がいい");
