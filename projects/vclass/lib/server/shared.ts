@@ -3,11 +3,20 @@ import fs from "fs";
 
 /**
  * Root of the monorepo `shared/` folder (prompts, scenario contexts, language levels).
- * Defaults to two levels above the Next.js project; override with SHARED_DIR.
+ * Override with SHARED_DIR; otherwise the first existing candidate wins:
+ * `../../shared` from the project (local dev, Docker) or `shared/` at the cwd
+ * (serverless bundles that run from the repository root).
  */
-export const SHARED_DIR = path.resolve(
-  process.env.SHARED_DIR ?? path.join(process.cwd(), "../../shared")
-);
+function resolveSharedDir(): string {
+  if (process.env.SHARED_DIR) return path.resolve(process.env.SHARED_DIR);
+  const candidates = [
+    path.join(process.cwd(), "../../shared"),
+    path.join(process.cwd(), "shared"),
+  ].map((p) => path.resolve(p));
+  return candidates.find((p) => fs.existsSync(path.join(p, "languages"))) ?? candidates[0];
+}
+
+export const SHARED_DIR = resolveSharedDir();
 
 const SLUG = /^[a-z0-9_]+$/;
 

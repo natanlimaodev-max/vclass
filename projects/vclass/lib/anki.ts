@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { apiRoute, HttpError, readJson } from "@/lib/server/http";
-import { createHash, randomBytes } from "crypto";
-import { readFileSync } from "fs";
-import { join } from "path";
-import initSqlJs from "sql.js";
+import initSqlJs, { type SqlJsConfig } from "sql.js";
 import JSZip from "jszip";
+
+/**
+ * Builds an Anki `.apkg` deck entirely in the browser (sql.js + jszip), so no
+ * audio has to be uploaded to the server and there is no request size limit.
+ */
 
 export interface AnkiCard {
   front: string;      // Japanese text (may include [sound:name.mp3])
@@ -14,16 +14,21 @@ export interface AnkiCard {
   isUserCard?: boolean; // grammar correction card
 }
 
-function csum(s: string): number {
-  return parseInt(createHash("sha1").update(s, "utf8").digest("hex").slice(0, 8), 16);
+/** Anki's checksum: first 8 hex digits of the SHA-1 of the sort field. */
+async function csum(s: string): Promise<number> {
+  const digest = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(s));
+  const hex = Array.from(new Uint8Array(digest).slice(0, 4), (b) => b.toString(16).padStart(2, "0")).join("");
+  return parseInt(hex, 16);
 }
 
 function guid(i: number): string {
-  return randomBytes(6).toString("base64url") + i;
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "") + i;
 }
 
-const MAX_CARDS = 500;
-const MAX_FIELD_LENGTH = 20_000;
+function base64ToBytes(b64: string): Uint8Array {
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -39,32 +44,16 @@ function mdToHtml(md: string): string {
     .replace(/\n/g, "<br>");
 }
 
-function parseCards(value: unknown): AnkiCard[] {
-  if (!Array.isArray(value)) throw new HttpError("'cards' must be an array", 400);
-  if (value.length > MAX_CARDS) throw new HttpError(`Too many cards (max ${MAX_CARDS})`, 400);
-  return value.map((c) => {
-    const card = (c ?? {}) as Record<string, unknown>;
-    if (typeof card.front !== "string" || card.front.length > MAX_FIELD_LENGTH) {
-      throw new HttpError("Invalid card", 400);
-    }
-    const back = typeof card.back === "string" ? card.back.slice(0, MAX_FIELD_LENGTH) : "";
-    const audioName =
-      typeof card.audioName === "string" && /^[\w.-]{1,100}$/.test(card.audioName) ? card.audioName : undefined;
-    const audioBase64 = typeof card.audioBase64 === "string" && audioName ? card.audioBase64 : undefined;
-    return { front: card.front, back, audioName, audioBase64, isUserCard: Boolean(card.isUserCard) };
-  });
-}
-
-export const POST = apiRoute(async (req) => {
-  const body = await readJson(req);
-  const deckName =
-    typeof body.deckName === "string" && body.deckName.trim() ? body.deckName.trim().slice(0, 200) : "VClass";
-  const cards = parseCards(body.cards);
-
-  const wasmBinary = readFileSync(
-    join(process.cwd(), "node_modules/sql.js/dist/sql-wasm.wasm")
-  ) as unknown as ArrayBuffer;
-  const SQL = await initSqlJs({ wasmBinary });
+/**
+ * @param sqlJsConfig how sql.js finds its WASM file. In the browser the default
+ *   loads `/sql-wasm.wasm`, which `npm run copy-wasm` places in `public/`.
+ */
+export async function buildApkg(
+  deckName: string,
+  cards: AnkiCard[],
+  sqlJsConfig: SqlJsConfig = { locateFile: () => "/sql-wasm.wasm" },
+): Promise<Uint8Array> {
+  const SQL = await initSqlJs(sqlJsConfig);
   const db = new SQL.Database();
 
   const now = Math.floor(Date.now() / 1000);
@@ -147,7 +136,7 @@ export const POST = apiRoute(async (req) => {
   const zip = new JSZip();
 
   let mediaIdx = 0;
-  cards.forEach((card, i) => {
+  for (const [i, card] of cards.entries()) {
     const noteId = now * 10000 + i + 1;
     const cardId = noteId + 1000000;
 
@@ -155,8 +144,7 @@ export const POST = apiRoute(async (req) => {
     let front = escapeHtml(card.front);
     if (card.audioBase64 && card.audioName) {
       const zipKey = String(mediaIdx);
-      const audioBytes = Uint8Array.from(atob(card.audioBase64), (c) => c.charCodeAt(0));
-      zip.file(zipKey, audioBytes);
+      zip.file(zipKey, base64ToBytes(card.audioBase64));
       mediaMap[zipKey] = card.audioName;
       front = `[sound:${card.audioName}]<br><br><div style="font-size:1.4em">${escapeHtml(card.front)}</div>`;
       mediaIdx++;
@@ -167,13 +155,13 @@ export const POST = apiRoute(async (req) => {
 
     db.run(
       `INSERT INTO notes VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-      [noteId, guid(i), MODEL_ID, now, -1, "", flds, front, csum(front), 0, ""]
+      [noteId, guid(i), MODEL_ID, now, -1, "", flds, front, await csum(front), 0, ""]
     );
     db.run(
       `INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [cardId, noteId, DECK_ID, 0, now, -1, 0, 0, i + 1, 0, 2500, 0, 0, 0, 0, 0, 0, ""]
     );
-  });
+  }
 
   const dbData = db.export();
   db.close();
@@ -181,11 +169,5 @@ export const POST = apiRoute(async (req) => {
   zip.file("collection.anki2", dbData);
   zip.file("media", JSON.stringify(mediaMap));
 
-  const apkgBuffer = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
-
-  return new NextResponse(new Blob([apkgBuffer.buffer as ArrayBuffer], { type: "application/zip" }), {
-    headers: {
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(deckName)}.apkg"`,
-    },
-  });
-});
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+}

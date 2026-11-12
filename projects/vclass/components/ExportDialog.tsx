@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ChatMessage } from "@/lib/useConversation";
 import type { ScenarioMeta } from "@/lib/scenarios";
-import type { AnkiCard } from "@/app/api/export/anki/route";
+import type { AnkiCard } from "@/lib/anki";
 
 interface Props {
   history: ChatMessage[];
@@ -57,22 +57,23 @@ export default function ExportDialog({ history, scenario, onClose, onExit }: Pro
   const handleExport = async () => {
     setState("generating");
     try {
-      const cards = buildCards(history);
-      const res = await fetch("/api/export/anki", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deckName, cards }),
-      });
-      if (!res.ok) throw new Error("Export failed");
-      const blob = await res.blob();
+      // Loaded on demand: sql.js + jszip are only needed when exporting.
+      const { buildApkg } = await import("@/lib/anki");
+      const bytes = await buildApkg(deckName, buildCards(history));
+      const blob = new Blob([bytes as BlobPart], { type: "application/zip" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${deckName}.apkg`;
+      // "·" and "/" are not safe in every OS's file names.
+      a.download = `${deckName.replace(/[\\/:*?"<>|·]+/g, "-").replace(/\s+/g, " ")}.apkg`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      // Revoke later: revoking right after click can cancel the download in some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
       setState("done");
-    } catch {
+    } catch (err) {
+      console.error("Anki export failed:", err);
       setState("error");
     }
   };

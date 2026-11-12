@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "copy-wasm": "node scripts/copy-wasm.mjs",
+    "predev": "npm run copy-wasm",
     "dev": "next dev",
+    "prebuild": "npm run copy-wasm",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

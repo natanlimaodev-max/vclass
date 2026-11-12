@@ -14,6 +14,9 @@ const LANGUAGE_CODES: Record<string, string> = {
   chinese: "zh",
 };
 
+// Upstream calls time out at 60s; let the function live that long on serverless hosts.
+export const maxDuration = 60;
+
 export const POST = apiRoute(async (req) => {
   const formData = await req.formData().catch(() => {
     throw new HttpError("Invalid form data", 400);

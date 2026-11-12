@@ -24,6 +24,9 @@ function parseHistory(value: unknown): Message[] {
   });
 }
 
+// Upstream calls time out at 60s; let the function live that long on serverless hosts.
+export const maxDuration = 60;
+
 export const POST = apiRoute(async (req) => {
   const body = await readJson(req);
   const scenario = validateScenario(body);
