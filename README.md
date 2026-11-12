@@ -78,6 +78,30 @@ RATE_LIMIT_PER_MINUTE=60            # optional: API requests per minute per IP (
 > use your OpenRouter and ElevenLabs keys, so an open deployment lets anyone spend
 > your credits.
 
+### Deploying for free (Vercel Hobby)
+
+The Hobby plan is free for personal, non-commercial use. Hosting costs nothing;
+OpenRouter and ElevenLabs usage is billed by those services.
+
+1. **Host the VRM model** (it is gitignored, so it isn't deployed with the code).
+   For example, on Cloudflare R2 (free tier): create a bucket, upload the `.vrm`,
+   enable *Public access → R2.dev subdomain*, and add a CORS rule allowing `GET`
+   from your Vercel domain. Copy the public URL of the file.
+2. On [vercel.com/new](https://vercel.com/new), import this repository.
+3. Set **Root Directory** to `projects/vclass` and keep *Include files outside
+   the root directory in the Build Step* enabled (the API reads `shared/`).
+4. Add the environment variables:
+   `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `ELEVENLABS_API_KEY`,
+   `ELEVENLABS_VOICE_ID`, **`APP_PASSWORD`** and `NEXT_PUBLIC_VRM_URL`
+   (the model URL from step 1).
+5. Deploy. Every push to `main` redeploys automatically.
+
+Notes for serverless hosting:
+- `APP_PASSWORD` is what protects your API keys. The in-memory rate limit is
+  per function instance, so it's only a soft limit there.
+- The Anki deck is built in the browser, so long conversations aren't limited by
+  the host's request size.
+
 ### Development
 
 ```bash

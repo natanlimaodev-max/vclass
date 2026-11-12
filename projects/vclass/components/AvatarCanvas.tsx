@@ -14,7 +14,7 @@ interface Props {
 }
 
 const AvatarCanvas = forwardRef<AvatarCanvasHandle, Props>(
-  ({ modelUrl = "/models/Arisa/_VRM/Arisa.vrm" }, ref) => {
+  ({ modelUrl = process.env.NEXT_PUBLIC_VRM_URL || "/models/Arisa/_VRM/Arisa.vrm" }, ref) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const controllerRef = useRef<AvatarController | null>(null);
 

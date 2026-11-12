@@ -21,7 +21,7 @@ terminal. The two apps share nothing at runtime except the files in `shared/`
 | LLM | OpenRouter chat completions (plain `fetch`, model from `OPENROUTER_MODEL`) |
 | TTS / STT | ElevenLabs REST API (`eleven_multilingual_v2`, `scribe_v1`) |
 | Lip sync | Web Audio `AnalyserNode` volume → VRM `aa` expression |
-| Anki export | `sql.js` (SQLite in WASM) + `jszip` → `.apkg` |
+| Anki export | `sql.js` (SQLite in WASM) + `jszip` → `.apkg`, built in the browser |
 | Tests / lint | Vitest, ESLint (`eslint-config-next`) |
 
 There is no WebSocket and no database: every call is a stateless HTTP request,
@@ -43,7 +43,7 @@ User types or speaks
   │     ok=false → input is flagged, user must correct it
   └─ POST /api/chat {history}            → next assistant turn (+ tts, explain)
 
-"End" → POST /api/export/anki {cards}    → .apkg download
+"End" → lib/anki.ts (in the browser)     → .apkg download
 ```
 
 The client logic lives in `lib/useConversation.ts`. Errors from any step are
@@ -59,7 +59,7 @@ shown in a banner above the input with a **Retry** button.
 - **Inputs are validated** (`lib/server/shared.ts`): `language` must have a
   `shared/languages/<code>.json`, `level` must be listed in it, and `scenario`
   must be a slug with a matching context file. Paths can't escape `shared/`.
-  Text fields, history length, audio size and Anki card counts are capped.
+  Text fields, history length and audio size are capped.
 - **The TTS voice is fixed** by `ELEVENLABS_VOICE_ID`; the client can't choose it.
 - **Optional password** (`APP_PASSWORD`): `proxy.ts` requires HTTP Basic auth
   for the whole app. Set it whenever the app is reachable from the internet,
@@ -81,8 +81,7 @@ projects/vclass/
 │       ├── grammar/route.ts     # grammar check (JSON verdict)
 │       ├── explain/route.ts     # sentence breakdown
 │       ├── tts/route.ts         # ElevenLabs text-to-speech
-│       ├── stt/route.ts         # ElevenLabs speech-to-text
-│       └── export/anki/route.ts # .apkg generation
+│       └── stt/route.ts         # ElevenLabs speech-to-text
 ├── components/                  # AvatarCanvas, ChatPanel, InputBar, modals
 ├── lib/
 │   ├── server/
@@ -90,6 +89,7 @@ projects/vclass/
 │   │   ├── openrouter.ts        # chatCompletion() with timeout + error handling
 │   │   └── http.ts              # apiRoute() wrapper, rate limit, input helpers
 │   ├── useConversation.ts       # client conversation state machine
+│   ├── anki.ts                  # .apkg builder (runs in the browser)
 │   ├── scenarios.ts             # language/level/scenario menu
 │   ├── AvatarController.ts      # rest pose, blinking, mouth
 │   ├── vrm.ts, lipSync.ts       # VRM loading, audio-driven mouth
@@ -123,6 +123,7 @@ Prompts are read on each request, so edits apply without a restart.
 | `ELEVENLABS_VOICE_ID` | yes | avatar voice |
 | `APP_PASSWORD` | no | enables the login prompt |
 | `RATE_LIMIT_PER_MINUTE` | no | API requests per minute per IP |
+| `NEXT_PUBLIC_VRM_URL` | no | avatar model URL (default `/models/Arisa/_VRM/Arisa.vrm`) |
 | `SHARED_DIR` | no | override the path to `shared/` |
 
 ---

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { apiRoute, HttpError, readJson, requireText } from "@/lib/server/http";
 import { stripFurigana } from "@/lib/text";
 
+// Upstream calls time out at 60s; let the function live that long on serverless hosts.
+export const maxDuration = 60;
+
 export const POST = apiRoute(async (req) => {
   const body = await readJson(req);
   // Speak only the base text, not the furigana readings.
