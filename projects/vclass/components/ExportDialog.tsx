@@ -16,9 +16,7 @@ function buildCards(history: ChatMessage[]): AnkiCard[] {
   const cards: AnkiCard[] = [];
   let audioIdx = 0;
 
-  const visible = history.filter((m) => m.role !== "system");
-
-  visible.forEach((msg) => {
+  history.forEach((msg) => {
     if (msg.role === "assistant") {
       const name = `bot_audio_${audioIdx++}.mp3`;
       cards.push({

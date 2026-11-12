@@ -23,8 +23,8 @@ function ConversationPanel({
   onExit: () => void;
 }) {
   const {
-    history, status, pendingTranscript, grammarFlagged,
-    start, sendMessage, sendFlagged, clearGrammarFlagged, replayAudio,
+    history, status, pendingTranscript, grammarFlagged, error,
+    start, sendMessage, sendFlagged, clearGrammarFlagged, replayAudio, retry, dismissError,
     startRecording, stopRecording, setPendingTranscript,
   } = useConversation(scenario, controller);
 
@@ -58,6 +58,9 @@ function ConversationPanel({
         status={status}
         pendingTranscript={pendingTranscript}
         grammarFlagged={grammarFlagged}
+        error={error}
+        onRetry={retry}
+        onDismissError={dismissError}
         onSendText={sendMessage}
         onResend={sendFlagged}
         onClearFlag={clearGrammarFlagged}
@@ -84,7 +87,7 @@ export default function Home() {
   const [controller, setController] = useState<AvatarController | null>(null);
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH);
   const panelWidthRef = useRef(DEFAULT_WIDTH);
-  panelWidthRef.current = panelWidth;
+  useEffect(() => { panelWidthRef.current = panelWidth; }, [panelWidth]);
 
   useEffect(() => {
     const interval = setInterval(() => {

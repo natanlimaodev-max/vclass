@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessage, GrammarCheck } from "@/lib/useConversation";
+import type { ChatMessage } from "@/lib/useConversation";
 import { renderFurigana } from "@/lib/furigana";
+import { stripFurigana } from "@/lib/text";
 import ExplainModal from "./ExplainModal";
 
 interface Props {
@@ -14,19 +15,15 @@ interface Props {
 export default function ChatPanel({ history, language, onReplay }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [explaining, setExplaining] = useState<{ sentence: string; content?: string } | null>(null);
-  const visible = history.filter((m) => m.role !== "system");
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [visible.length]);
-
-  // Strip furigana brackets for explain prompt
-  const stripFurigana = (text: string) => text.replace(/\s*\[[^\]]+\]/g, "");
+  }, [history.length]);
 
   return (
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {visible.map((msg, i) => (
+        {history.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
