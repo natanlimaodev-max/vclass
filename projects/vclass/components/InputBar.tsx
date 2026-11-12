@@ -115,14 +115,23 @@ export default function InputBar({
       {flagged && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-amber-500">Grammar issue found — speak or edit to correct</p>
-          {grammarFlagged!.check.explanation && (
+          <div className="flex gap-3 shrink-0">
+            {grammarFlagged!.check.explanation && (
+              <button
+                onClick={() => setShowExplain(true)}
+                className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                ? explain
+              </button>
+            )}
             <button
-              onClick={() => setShowExplain(true)}
-              className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+              onClick={onResend}
+              className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+              title="Send as is; the correction is kept for the Anki export"
             >
-              ? explain
+              send anyway
             </button>
-          )}
+          </div>
         </div>
       )}
 

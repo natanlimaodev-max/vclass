@@ -188,6 +188,7 @@ export function useConversation(
       grammarCheck = await postJSON<GrammarCheck>("/api/grammar", {
         sentence: userText,
         language: scenario.language,
+        level: scenario.level,
       });
     } catch {
       // If the check itself fails, don't block the conversation.

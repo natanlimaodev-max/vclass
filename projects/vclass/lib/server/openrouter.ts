@@ -13,7 +13,10 @@ const DEFAULT_MODEL = "openai/gpt-4o-mini";
 const TIMEOUT_MS = 60_000;
 
 /** Call OpenRouter chat completions and return the first choice's text. Throws UpstreamError. */
-export async function chatCompletion(messages: LLMMessage[]): Promise<string> {
+export async function chatCompletion(
+  messages: LLMMessage[],
+  options: { temperature?: number } = {},
+): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new UpstreamError("OPENROUTER_API_KEY is not configured", 500);
 
@@ -22,7 +25,7 @@ export async function chatCompletion(messages: LLMMessage[]): Promise<string> {
     res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL, messages }),
+      body: JSON.stringify({ model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL, messages, ...options }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (err) {

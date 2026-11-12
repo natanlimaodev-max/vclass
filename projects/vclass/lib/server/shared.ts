@@ -104,11 +104,25 @@ export function buildSystemPrompt({ language, level, scenario }: ScenarioParams)
 }
 
 /**
- * Load `shared/prompts/<language>/<name>.txt` and fill `{sentence}`.
+ * Load `shared/prompts/<language>/<name>.txt` and fill `{sentence}` and `{level}`.
  * Read on every call so prompt edits apply without a restart.
  */
-export function renderPrompt(language: string, name: "grammar" | "explain", sentence: string): string | null {
+export function renderPrompt(
+  language: string,
+  name: "grammar" | "explain",
+  sentence: string,
+  level?: string,
+): string | null {
   const file = sharedPath("prompts", language, `${name}.txt`);
   if (!fs.existsSync(file)) return null;
-  return fs.readFileSync(file, "utf-8").replace("{sentence}", () => sentence);
+  return fs
+    .readFileSync(file, "utf-8")
+    .replace(/\{level\}/g, () => level ?? "intermediário")
+    .replace("{sentence}", () => sentence);
+}
+
+/** The level code if it exists for this language, otherwise undefined. */
+export function knownLevel(language: string, level: unknown): string | undefined {
+  if (typeof level !== "string") return undefined;
+  return loadLanguage(language).levels.some((l) => l.code === level) ? level : undefined;
 }
