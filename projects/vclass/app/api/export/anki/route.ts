@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { apiRoute, HttpError, readJson } from "@/lib/server/http";
 import { createHash, randomBytes } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -21,8 +22,15 @@ function guid(i: number): string {
   return randomBytes(6).toString("base64url") + i;
 }
 
+const MAX_CARDS = 500;
+const MAX_FIELD_LENGTH = 20_000;
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function mdToHtml(md: string): string {
-  return md
+  return escapeHtml(md)
     .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
     .replace(/^## (.+)$/gm, "<h3>$1</h3>")
     .replace(/^### (.+)$/gm, "<h4>$1</h4>")
@@ -31,8 +39,27 @@ function mdToHtml(md: string): string {
     .replace(/\n/g, "<br>");
 }
 
-export async function POST(req: NextRequest) {
-  const { deckName, cards } = await req.json() as { deckName: string; cards: AnkiCard[] };
+function parseCards(value: unknown): AnkiCard[] {
+  if (!Array.isArray(value)) throw new HttpError("'cards' must be an array", 400);
+  if (value.length > MAX_CARDS) throw new HttpError(`Too many cards (max ${MAX_CARDS})`, 400);
+  return value.map((c) => {
+    const card = (c ?? {}) as Record<string, unknown>;
+    if (typeof card.front !== "string" || card.front.length > MAX_FIELD_LENGTH) {
+      throw new HttpError("Invalid card", 400);
+    }
+    const back = typeof card.back === "string" ? card.back.slice(0, MAX_FIELD_LENGTH) : "";
+    const audioName =
+      typeof card.audioName === "string" && /^[\w.-]{1,100}$/.test(card.audioName) ? card.audioName : undefined;
+    const audioBase64 = typeof card.audioBase64 === "string" && audioName ? card.audioBase64 : undefined;
+    return { front: card.front, back, audioName, audioBase64, isUserCard: Boolean(card.isUserCard) };
+  });
+}
+
+export const POST = apiRoute(async (req) => {
+  const body = await readJson(req);
+  const deckName =
+    typeof body.deckName === "string" && body.deckName.trim() ? body.deckName.trim().slice(0, 200) : "VClass";
+  const cards = parseCards(body.cards);
 
   const wasmBinary = readFileSync(
     join(process.cwd(), "node_modules/sql.js/dist/sql-wasm.wasm")
@@ -60,6 +87,7 @@ export async function POST(req: NextRequest) {
 
   const model = {
     id: String(MODEL_ID),
+    // Legacy name kept on purpose: renaming would create a second note type in decks users already imported.
     name: "KitsuneCard",
     type: 0, mod: now, usn: -1, sortf: 0, did: DECK_ID,
     tmpls: [{
@@ -124,13 +152,13 @@ export async function POST(req: NextRequest) {
     const cardId = noteId + 1000000;
 
     // Attach audio to front field
-    let front = card.front;
+    let front = escapeHtml(card.front);
     if (card.audioBase64 && card.audioName) {
       const zipKey = String(mediaIdx);
       const audioBytes = Uint8Array.from(atob(card.audioBase64), (c) => c.charCodeAt(0));
       zip.file(zipKey, audioBytes);
       mediaMap[zipKey] = card.audioName;
-      front = `[sound:${card.audioName}]<br><br><div style="font-size:1.4em">${card.front}</div>`;
+      front = `[sound:${card.audioName}]<br><br><div style="font-size:1.4em">${escapeHtml(card.front)}</div>`;
       mediaIdx++;
     }
 
@@ -160,4 +188,4 @@ export async function POST(req: NextRequest) {
       "Content-Disposition": `attachment; filename="${encodeURIComponent(deckName)}.apkg"`,
     },
   });
-}
+});
